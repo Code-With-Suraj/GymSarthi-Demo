@@ -108,6 +108,10 @@ const Api = {
     return this.call('getInactiveMembers', { gymId, thresholdDays });
   },
 
+  async getExpiringMembers(gymId = CONFIG.GYM_ID, thresholdDays = 3) {
+    return this.call('getExpiringMembers', { gymId, thresholdDays });
+  },
+
   // Store & Products
   async getProducts(gymId = CONFIG.GYM_ID) {
     return this.call('getProducts', { gymId });

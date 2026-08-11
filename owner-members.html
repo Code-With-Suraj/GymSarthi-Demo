@@ -43,12 +43,16 @@
       <main class="p-6 space-y-6 flex-1">
 
         <!-- Tabs Header -->
-        <div class="flex border-b border-gray-800 space-x-4">
-          <button id="tab-btn-inactive" onclick="switchTab('inactive')" class="py-3 px-4 font-bold text-sm border-b-2 border-rose-500 text-rose-400 flex items-center space-x-2">
+        <div class="flex border-b border-gray-800 space-x-2 sm:space-x-4 overflow-x-auto">
+          <button id="tab-btn-expiring" onclick="switchTab('expiring')" class="py-3 px-4 font-bold text-sm border-b-2 border-amber-500 text-amber-400 flex items-center space-x-2 whitespace-nowrap">
+            <span>⏳ Expiring Soon (3 Days)</span>
+            <span id="expiring-count-badge" class="px-2 py-0.5 rounded-full text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30">0</span>
+          </button>
+          <button id="tab-btn-inactive" onclick="switchTab('inactive')" class="py-3 px-4 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap">
             <span>🚨 Inactive Alerts (3+ Days)</span>
             <span id="inactive-count-badge" class="px-2 py-0.5 rounded-full text-xs bg-rose-500/20 text-rose-400 border border-rose-500/30">0</span>
           </button>
-          <button id="tab-btn-all" onclick="switchTab('all')" class="py-3 px-4 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2">
+          <button id="tab-btn-all" onclick="switchTab('all')" class="py-3 px-4 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap">
             <span>👥 All Gym Members</span>
             <span id="all-count-badge" class="px-2 py-0.5 rounded-full text-xs bg-gray-800 text-gray-300">0</span>
           </button>
@@ -63,8 +67,41 @@
           </div>
         </div>
 
+        <!-- TAB 0: EXPIRING MEMBERS RETENTION LIST -->
+        <div id="section-expiring" class="space-y-4">
+          <div class="glass-card p-4 rounded-2xl border-amber-500/40 bg-gradient-to-r from-amber-950/20 via-gray-900 to-gray-900 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <span class="text-2xl">⏳</span>
+              <div>
+                <h3 class="font-extrabold text-sm text-white">Smart 3-Day Membership Expiry Alerts</h3>
+                <p class="text-xs text-gray-400">Members expiring in next 3 days. Send 1-click WhatsApp renewal reminder with direct app registration link.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card rounded-3xl border-gray-800 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-gray-900/90 text-gray-400 uppercase font-semibold border-b border-gray-800">
+                  <tr>
+                    <th class="py-3 px-4">Member Name</th>
+                    <th class="py-3 px-4">Mobile</th>
+                    <th class="py-3 px-4">Current Package</th>
+                    <th class="py-3 px-4">Expiry Date</th>
+                    <th class="py-3 px-4">Urgency Status</th>
+                    <th class="py-3 px-4 text-center">1-Click Renewal Link</th>
+                  </tr>
+                </thead>
+                <tbody id="expiring-table-body" class="divide-y divide-gray-800/60 text-gray-300">
+                  <tr><td colspan="6" class="py-6 text-center text-gray-500">Scanning for memberships expiring soon...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
         <!-- TAB 1: INACTIVE MEMBERS RETENTION LIST -->
-        <div id="section-inactive" class="space-y-4">
+        <div id="section-inactive" class="space-y-4 hidden">
           <div class="glass-card p-4 rounded-2xl border-rose-500/40 bg-gradient-to-r from-rose-950/20 via-gray-900 to-gray-900 flex items-center justify-between">
             <div class="flex items-center space-x-3">
               <span class="text-2xl">📞</span>
@@ -175,53 +212,116 @@
 
     let allMembers = [];
     let inactiveMembers = [];
-    let activeTab = 'inactive';
+    let expiringMembers = [];
+    let activeTab = 'expiring';
 
     // Check query params
     const params = new URLSearchParams(window.location.search);
     if (params.get('tab') === 'all') {
       switchTab('all');
+    } else if (params.get('tab') === 'inactive') {
+      switchTab('inactive');
     }
 
     function switchTab(tab) {
       activeTab = tab;
+      const expiringBtn = document.getElementById('tab-btn-expiring');
       const inactiveBtn = document.getElementById('tab-btn-inactive');
       const allBtn = document.getElementById('tab-btn-all');
+
+      const expiringSec = document.getElementById('section-expiring');
       const inactiveSec = document.getElementById('section-inactive');
       const allSec = document.getElementById('section-all');
 
-      if (tab === 'inactive') {
-        inactiveBtn.className = 'py-3 px-4 font-bold text-sm border-b-2 border-rose-500 text-rose-400 flex items-center space-x-2';
-        allBtn.className = 'py-3 px-4 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2';
+      // Reset all tabs
+      expiringBtn.className = 'py-3 px-4 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap';
+      inactiveBtn.className = 'py-3 px-4 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap';
+      allBtn.className = 'py-3 px-4 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap';
+
+      expiringSec.classList.add('hidden');
+      inactiveSec.classList.add('hidden');
+      allSec.classList.add('hidden');
+
+      if (tab === 'expiring') {
+        expiringBtn.className = 'py-3 px-4 font-bold text-sm border-b-2 border-amber-500 text-amber-400 flex items-center space-x-2 whitespace-nowrap';
+        expiringSec.classList.remove('hidden');
+      } else if (tab === 'inactive') {
+        inactiveBtn.className = 'py-3 px-4 font-bold text-sm border-b-2 border-rose-500 text-rose-400 flex items-center space-x-2 whitespace-nowrap';
         inactiveSec.classList.remove('hidden');
-        allSec.classList.add('hidden');
       } else {
-        allBtn.className = 'py-3 px-4 font-bold text-sm border-b-2 border-emerald-500 text-emerald-400 flex items-center space-x-2';
-        inactiveBtn.className = 'py-3 px-4 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2';
+        allBtn.className = 'py-3 px-4 font-bold text-sm border-b-2 border-emerald-500 text-emerald-400 flex items-center space-x-2 whitespace-nowrap';
         allSec.classList.remove('hidden');
-        inactiveSec.classList.add('hidden');
       }
     }
 
     async function loadMembersData() {
       try {
-        const resInactive = await Api.getInactiveMembers(CONFIG.GYM_ID, 3);
-        inactiveMembers = Array.isArray(resInactive) ? resInactive : (resInactive && Array.isArray(resInactive.members) ? resInactive.members : []);
+        const dashData = await Api.getDashboardData(CONFIG.GYM_ID);
+        expiringMembers = Array.isArray(dashData.expiringMembers) ? dashData.expiringMembers : [];
+        inactiveMembers = Array.isArray(dashData.inactiveMembers) ? dashData.inactiveMembers : [];
+        allMembers = Array.isArray(dashData.members) ? dashData.members : [];
 
-        const resAll = await Api.getMembers(CONFIG.GYM_ID);
-        allMembers = Array.isArray(resAll) ? resAll : (resAll && Array.isArray(resAll.members) ? resAll.members : []);
-
+        document.getElementById('expiring-count-badge').textContent = expiringMembers.length;
         document.getElementById('inactive-count-badge').textContent = inactiveMembers.length;
         document.getElementById('all-count-badge').textContent = allMembers.length;
 
+        renderExpiringTable(expiringMembers);
         renderInactiveTable(inactiveMembers);
         renderAllMembersTable(allMembers);
 
       } catch (err) {
         console.warn('Members load error:', err);
+        renderExpiringTable([]);
         renderInactiveTable([]);
         renderAllMembersTable([]);
       }
+    }
+
+    function renderExpiringTable(list) {
+      const tbody = document.getElementById('expiring-table-body');
+      const safeList = Array.isArray(list) ? list : [];
+      if (safeList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-emerald-400 font-semibold">🎉 No memberships expiring in the next 3 days! All plans healthy.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = safeList.map(m => {
+        let badgeColor = 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+        if (m.urgencyLevel === 'HIGH') {
+          badgeColor = 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+        } else if (m.urgencyLevel === 'CRITICAL') {
+          badgeColor = 'bg-rose-500/20 text-rose-400 border-rose-500/30';
+        }
+
+        return `
+          <tr class="hover:bg-gray-900/40">
+            <td class="py-3.5 px-4 font-bold text-white flex items-center space-x-3">
+              <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold text-xs">
+                ${(m.name || 'M').charAt(0)}
+              </div>
+              <span>${m.name || 'Member'}</span>
+            </td>
+            <td class="py-3.5 px-4 font-semibold text-gray-300">+91 ${m.mobile || ''}</td>
+            <td class="py-3.5 px-4 font-medium text-emerald-400">${m.packageName || 'Membership'}</td>
+            <td class="py-3.5 px-4 text-gray-400 text-xs">${Utils.formatDate(m.expiryDate)}</td>
+            <td class="py-3.5 px-4">
+              <span class="px-2.5 py-1 rounded-full text-xs font-black border ${badgeColor}">
+                ${m.urgencyText || 'Expires Soon'}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-center space-x-2">
+              <a href="${m.callLink || '#'}" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-white font-bold text-xs inline-flex items-center space-x-1 shadow border border-gray-700">
+                <span>Call</span>
+                <span>📞</span>
+              </a>
+              <a href="${m.whatsappLink || '#'}" target="_blank" class="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-black text-xs inline-flex items-center space-x-1 shadow transition-all transform hover:scale-105">
+                <span>Send Renewal Link</span>
+                <span>💬</span>
+              </a>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     function renderInactiveTable(list) {
@@ -318,7 +418,11 @@
 
     function filterMembers() {
       const query = document.getElementById('search-input').value.toLowerCase();
-      if (activeTab === 'inactive') {
+      if (activeTab === 'expiring') {
+        const safeList = Array.isArray(expiringMembers) ? expiringMembers : [];
+        const filtered = safeList.filter(m => (m.name && m.name.toLowerCase().includes(query)) || (m.mobile && String(m.mobile).includes(query)));
+        renderExpiringTable(filtered);
+      } else if (activeTab === 'inactive') {
         const safeList = Array.isArray(inactiveMembers) ? inactiveMembers : [];
         const filtered = safeList.filter(m => (m.name && m.name.toLowerCase().includes(query)) || (m.mobile && String(m.mobile).includes(query)));
         renderInactiveTable(filtered);
