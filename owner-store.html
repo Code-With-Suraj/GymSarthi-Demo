@@ -31,7 +31,7 @@
           </div>
         </div>
 
-        <button id="add-prod-btn" onclick="openAddProductModal()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-gray-950 font-bold text-xs shadow hover:scale-[1.02] transition-all">
+        <button id="add-product-btn" onclick="openAddProductModal()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-gray-950 font-bold text-xs shadow hover:scale-[1.02] transition-all">
           + Add New Product
         </button>
       </header>
@@ -39,7 +39,7 @@
       <main class="p-6 space-y-6 flex-1">
 
         <!-- GATING LOCKOVERLAY IF ON BASIC PLAN -->
-        <div id="gating-lock" class="glass-card p-10 rounded-3xl border-cyan-500/40 text-center space-y-6 max-w-xl mx-auto my-12 hidden">
+        <div id="store-lock-overlay" class="glass-card p-10 rounded-3xl border-cyan-500/40 text-center space-y-6 max-w-xl mx-auto my-12 hidden">
           <div class="w-20 h-20 rounded-3xl bg-cyan-500/10 border-2 border-cyan-500 flex items-center justify-center text-4xl mx-auto text-cyan-400 shadow-xl">
             🔒
           </div>
@@ -47,7 +47,7 @@
             <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">Basic Plan Active</span>
             <h2 class="text-2xl font-black text-white mt-3">Gym Store Feature Locked</h2>
             <p class="text-xs text-gray-400 mt-2 leading-relaxed">
-              Your gym is currently on the Basic Plan (₹499/mo or ₹4,999/yr). Upgrade to the <strong class="text-cyan-400">Pro Plan (₹799/mo or ₹7,999/yr)</strong> to unlock full Gym Supplement Store, Inventory Stock, and Sales Audit features.
+              Your gym is currently on a plan without Gym Store access (`has_store = FALSE`). Upgrade to the <strong class="text-cyan-400">Pro SaaS Plan</strong> to unlock full Gym Supplement Store, Inventory Stock, and Sales Audit features.
             </p>
           </div>
 
@@ -57,7 +57,7 @@
         </div>
 
         <!-- STORE CONTENT (VISIBLE ON PRO PLAN) -->
-        <div id="store-content" class="space-y-6">
+        <div id="store-main-content" class="space-y-6">
           <div class="glass-card rounded-3xl border-gray-800 overflow-hidden">
             <div class="p-5 border-b border-gray-800 flex items-center justify-between">
               <h3 class="font-bold text-white text-base">Store Products & Inventory</h3>
@@ -155,14 +155,14 @@
         const sub = storeData.subscription || {};
         const products = Array.isArray(storeData.products) ? storeData.products : [];
 
-        if (!sub.hasStore && !sub.hasActiveSubscription) {
-          lockOverlay.classList.remove('hidden');
-          storeContent.classList.add('hidden');
-          addBtn.classList.add('hidden');
+        if (!sub.hasStore || !sub.hasActiveSubscription) {
+          if (lockOverlay) lockOverlay.classList.remove('hidden');
+          if (storeContent) storeContent.classList.add('hidden');
+          if (addBtn) addBtn.classList.add('hidden');
         } else {
-          lockOverlay.classList.add('hidden');
-          storeContent.classList.remove('hidden');
-          addBtn.classList.remove('hidden');
+          if (lockOverlay) lockOverlay.classList.add('hidden');
+          if (storeContent) storeContent.classList.remove('hidden');
+          if (addBtn) addBtn.classList.remove('hidden');
 
           if (products.length === 0) {
             tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-gray-500 text-sm">No products found in store. Click "Add New Product" to stock items.</td></tr>`;

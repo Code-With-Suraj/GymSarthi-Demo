@@ -12,7 +12,7 @@ const OwnerSidebar = {
       { key: 'packages', label: 'Gym Packages', icon: '🏷️', url: 'owner-packages.html' },
       { key: 'store', label: 'Gym Store', icon: '🛒', url: 'owner-store.html', reqPro: true },
       { key: 'payments', label: 'Payment Audit', icon: '💳', url: 'owner-payments.html' },
-      { key: 'expenses', label: 'Expenses Log', icon: '💰', url: 'owner-expenses.html' },
+      { key: 'expenses', label: 'Expenses Log', icon: '💰', url: 'owner-expenses.html', reqPro: true },
       { key: 'subscription', label: 'App Subscription', icon: '⚡', url: 'owner-subscription.html' }
     ];
 
@@ -50,7 +50,10 @@ const OwnerSidebar = {
                     <span class="text-lg">${item.icon}</span>
                     <span>${item.label}</span>
                   </div>
-                  ${item.badge ? `<span class="text-[9px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30">${item.badge}</span>` : ''}
+                  <div class="flex items-center space-x-1">
+                    ${item.reqPro ? `<span class="text-[9px] font-black px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">PRO</span>` : ''}
+                    ${item.badge ? `<span class="text-[9px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30">${item.badge}</span>` : ''}
+                  </div>
                 </a>
               `;
             }).join('')}

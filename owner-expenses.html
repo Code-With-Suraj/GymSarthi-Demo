@@ -34,7 +34,7 @@
           </div>
         </div>
 
-        <button onclick="openAddExpenseModal()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 text-white font-bold text-xs shadow-lg hover:scale-[1.02] transition-all flex items-center space-x-1.5">
+        <button id="add-expense-btn" onclick="openAddExpenseModal()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 text-white font-bold text-xs shadow-lg hover:scale-[1.02] transition-all flex items-center space-x-1.5">
           <span>+ Log Expense</span>
           <span>💰</span>
         </button>
@@ -43,8 +43,25 @@
       <!-- Main Body -->
       <main class="p-6 space-y-6 flex-1">
 
-        <!-- KPI Stats Cards Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- GATING LOCKOVERLAY IF ON BASIC PLAN -->
+        <div id="expenses-lock-overlay" class="glass-card p-10 rounded-3xl border-rose-500/40 text-center space-y-6 max-w-xl mx-auto my-12 hidden">
+          <div class="w-20 h-20 rounded-3xl bg-rose-500/10 border-2 border-rose-500 flex items-center justify-center text-4xl mx-auto text-rose-400 shadow-xl">
+            🔒
+          </div>
+          <div>
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">Basic Plan Active</span>
+            <h2 class="text-2xl font-black text-white mt-3">Expenses Log & Audit Locked</h2>
+            <p class="text-xs text-gray-400 mt-2 leading-relaxed">
+              Your gym is currently on a plan without Expenses Log access (`has_store = FALSE`). Upgrade to the <strong class="text-rose-400">Pro SaaS Plan</strong> to unlock full Operational Expense Logging, Outflow Tracking, and Net Profit & Loss Analytics.
+            </p>
+          </div>
+
+          <a href="owner-subscription.html" class="inline-flex items-center space-x-2 px-8 py-3.5 rounded-2xl font-black text-sm bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-xl hover:scale-105 transition-all">
+            <span>⚡ Upgrade to Pro Plan Now</span>
+          </a>
+        </div>
+
+        <div id="expenses-main-content" class="space-y-6">
           <div class="glass-card p-5 rounded-2xl border-rose-500/30 bg-rose-950/10">
             <div class="flex items-center justify-between text-rose-400 text-xs font-bold uppercase">
               <span>Total Expenses</span>
@@ -132,6 +149,8 @@
           </div>
         </div>
 
+        </div><!-- /expenses-main-content -->
+
       </main>
     </div>
   </div>
@@ -217,8 +236,23 @@
     document.getElementById('exp-date').value = new Date().toISOString().split('T')[0];
 
     async function loadExpenses() {
-      const tbody = document.getElementById('expenses-table-body');
+      const lockOverlay = document.getElementById('expenses-lock-overlay');
+      const expensesContent = document.getElementById('expenses-main-content');
+      const addBtn = document.getElementById('add-expense-btn');
+
       try {
+        const sub = await Api.getGymSubscription(CONFIG.GYM_ID);
+        if (!sub || !sub.hasStore || !sub.hasActiveSubscription) {
+          if (lockOverlay) lockOverlay.classList.remove('hidden');
+          if (expensesContent) expensesContent.classList.add('hidden');
+          if (addBtn) addBtn.classList.add('hidden');
+          return;
+        } else {
+          if (lockOverlay) lockOverlay.classList.add('hidden');
+          if (expensesContent) expensesContent.classList.remove('hidden');
+          if (addBtn) addBtn.classList.remove('hidden');
+        }
+
         const raw = await Api.getExpenses(CONFIG.GYM_ID);
         allExpenses = Array.isArray(raw) ? raw : [];
 

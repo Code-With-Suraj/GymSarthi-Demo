@@ -37,27 +37,47 @@
   <!-- Main Content -->
   <main class="max-w-5xl mx-auto w-full px-4 py-6 flex-1 space-y-6">
 
-    <!-- Store Hero Banner -->
-    <div class="glass-card p-6 rounded-3xl border-gray-800 bg-gradient-to-r from-cyan-950/40 via-gray-900 to-gray-900 relative overflow-hidden">
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <span class="px-3 py-1 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">Feature 4: Gym In-App Store</span>
-          <h1 class="text-2xl font-black text-white mt-1">Gym Supplements & Gear 🏋️‍♂️</h1>
-          <p class="text-xs text-gray-400 mt-1">Genuine authentic whey protein, pre-workouts, shakers, and training accessories.</p>
+    <!-- MEMBER STORE GATING LOCKOVERLAY IF GYM STORE DISABLED -->
+    <div id="store-lock-overlay" class="glass-card p-10 rounded-3xl border-rose-500/40 text-center space-y-6 max-w-xl mx-auto my-12 hidden">
+      <div class="w-20 h-20 rounded-3xl bg-rose-500/10 border-2 border-rose-500 flex items-center justify-center text-4xl mx-auto text-rose-400 shadow-xl">
+        🔒
+      </div>
+      <div>
+        <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">Gym Store Disabled</span>
+        <h2 class="text-2xl font-black text-white mt-3">In-App Gym Store Unavailable</h2>
+        <p class="text-xs text-gray-400 mt-2 leading-relaxed">
+          The In-App Supplement & Gear Store feature is currently disabled or not included in your gym's active subscription (`has_store = FALSE`). Please check back later or contact your gym management.
+        </p>
+      </div>
+
+      <a href="member-dashboard.html" class="inline-flex items-center space-x-2 px-8 py-3.5 rounded-2xl font-black text-sm bg-gray-800 hover:bg-gray-700 text-emerald-400 border border-gray-700 transition-all">
+        <span>🏠 Back to Member Dashboard</span>
+      </a>
+    </div>
+
+    <div id="store-main-content" class="space-y-6">
+      <!-- Store Hero Banner -->
+      <div class="glass-card p-6 rounded-3xl border-gray-800 bg-gradient-to-r from-cyan-950/40 via-gray-900 to-gray-900 relative overflow-hidden">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">Feature 4: Gym In-App Store</span>
+            <h1 class="text-2xl font-black text-white mt-1">Gym Supplements & Gear 🏋️‍♂️</h1>
+            <p class="text-xs text-gray-400 mt-1">Genuine authentic whey protein, pre-workouts, shakers, and training accessories.</p>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Category Filter Tabs -->
-    <div class="flex space-x-2 overflow-x-auto pb-2 scrollbar-none">
-      <button onclick="filterCategory('ALL')" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500 text-gray-950 transition-all">All Products</button>
-      <button onclick="filterCategory('Supplements')" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-gray-900 border border-gray-800 text-gray-400 hover:text-white transition-all">Supplements</button>
-      <button onclick="filterCategory('Gear')" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-gray-900 border border-gray-800 text-gray-400 hover:text-white transition-all">Accessories & Gear</button>
-    </div>
+      <!-- Category Filter Tabs -->
+      <div class="flex space-x-2 overflow-x-auto pb-2 scrollbar-none">
+        <button onclick="filterCategory('ALL')" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500 text-gray-950 transition-all">All Products</button>
+        <button onclick="filterCategory('Supplements')" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-gray-900 border border-gray-800 text-gray-400 hover:text-white transition-all">Supplements</button>
+        <button onclick="filterCategory('Gear')" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-gray-900 border border-gray-800 text-gray-400 hover:text-white transition-all">Accessories & Gear</button>
+      </div>
 
-    <!-- Product Grid -->
-    <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Products loaded here -->
+      <!-- Product Grid -->
+      <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Products loaded here -->
+      </div>
     </div>
   </main>
 
@@ -121,11 +141,27 @@
     let cart = [];
 
     async function loadProducts() {
-      const grid = document.getElementById('product-grid');
-      try {
-        const products = await Api.getProducts(CONFIG.GYM_ID);
-        allProducts = Array.isArray(products) ? products : [];
+      const lockOverlay = document.getElementById('store-lock-overlay');
+      const storeMainContent = document.getElementById('store-main-content');
+      const cartBtn = document.getElementById('cart-btn');
 
+      try {
+        const storeData = await Api.getStorePageData(CONFIG.GYM_ID);
+        const sub = storeData ? storeData.subscription : null;
+        const products = storeData && Array.isArray(storeData.products) ? storeData.products : [];
+
+        if (!sub || sub.hasStore === false || sub.hasActiveSubscription === false) {
+          if (lockOverlay) lockOverlay.classList.remove('hidden');
+          if (storeMainContent) storeMainContent.classList.add('hidden');
+          if (cartBtn) cartBtn.classList.add('hidden');
+          return;
+        } else {
+          if (lockOverlay) lockOverlay.classList.add('hidden');
+          if (storeMainContent) storeMainContent.classList.remove('hidden');
+          if (cartBtn) cartBtn.classList.remove('hidden');
+        }
+
+        allProducts = products;
         renderProducts(allProducts);
       } catch (err) {
         console.warn('Store load error:', err);

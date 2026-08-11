@@ -148,6 +148,85 @@
           </div>
         </div>
 
+        <!-- Detailed Feature Comparison Matrix -->
+        <div class="glass-card p-6 sm:p-8 rounded-3xl border-gray-800 space-y-6">
+          <div>
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Plan Comparison</span>
+            <h3 class="text-xl font-black text-white mt-1">GymSarthi Feature Matrix — Basic vs Pro</h3>
+            <p class="text-xs text-gray-400">Detailed feature breakdown for Basic (₹499/mo) and Pro (₹799/mo) plans.</p>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs sm:text-sm">
+              <thead>
+                <tr class="border-b border-gray-800 text-gray-400 font-bold uppercase tracking-wider">
+                  <th class="py-3 px-4">Feature / Module</th>
+                  <th class="py-3 px-4 text-center bg-gray-900/60 rounded-t-xl">
+                    <span class="text-white block">Basic Plan</span>
+                    <span class="text-[11px] text-gray-400 font-normal">₹499/mo or ₹4,999/yr</span>
+                  </th>
+                  <th class="py-3 px-4 text-center bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-400 rounded-t-xl">
+                    <span class="text-emerald-400 block font-black">Pro Plan ⭐</span>
+                    <span class="text-[11px] text-emerald-300/80 font-normal">₹799/mo or ₹7,999/yr</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-800/60 text-gray-300">
+                <tr>
+                  <td class="py-3 px-4 font-semibold text-white">👥 Member Management & Packages</td>
+                  <td class="py-3 px-4 text-center font-bold text-emerald-400">✅ Included</td>
+                  <td class="py-3 px-4 text-center font-bold text-emerald-400">✅ Included</td>
+                </tr>
+                <tr>
+                  <td class="py-3 px-4 font-semibold text-white">📱 Gate QR Attendance & Scanner</td>
+                  <td class="py-3 px-4 text-center font-bold text-emerald-400">✅ Included</td>
+                  <td class="py-3 px-4 text-center font-bold text-emerald-400">✅ Included</td>
+                </tr>
+                <tr>
+                  <td class="py-3 px-4 font-semibold text-white">📞 3-Day Expiry Call & WhatsApp Alerts</td>
+                  <td class="py-3 px-4 text-center font-bold text-emerald-400">✅ Included</td>
+                  <td class="py-3 px-4 text-center font-bold text-emerald-400">✅ Included</td>
+                </tr>
+                <tr>
+                  <td class="py-3 px-4 font-semibold text-white">💳 Membership Payment Audit Log</td>
+                  <td class="py-3 px-4 text-center font-bold text-emerald-400">✅ Included</td>
+                  <td class="py-3 px-4 text-center font-bold text-emerald-400">✅ Included</td>
+                </tr>
+                <tr>
+                  <td class="py-3 px-4 font-semibold text-white">🏋️‍♂️ Member Self-Service Portal</td>
+                  <td class="py-3 px-4 text-center font-bold text-emerald-400">✅ Included</td>
+                  <td class="py-3 px-4 text-center font-bold text-emerald-400">✅ Included</td>
+                </tr>
+                <tr class="bg-cyan-950/20">
+                  <td class="py-3 px-4 font-bold text-cyan-300">🛒 Gym In-App Supplement Store</td>
+                  <td class="py-3 px-4 text-center font-bold text-rose-400">🔒 Locked (has_store=FALSE)</td>
+                  <td class="py-3 px-4 text-center font-bold text-cyan-400">✅ Full Access (has_store=TRUE)</td>
+                </tr>
+                <tr class="bg-cyan-950/20">
+                  <td class="py-3 px-4 font-bold text-cyan-300">📦 Stock & Inventory Management</td>
+                  <td class="py-3 px-4 text-center font-bold text-rose-400">🔒 Locked</td>
+                  <td class="py-3 px-4 text-center font-bold text-cyan-400">✅ Full Access</td>
+                </tr>
+                <tr class="bg-cyan-950/20">
+                  <td class="py-3 px-4 font-bold text-cyan-300">💰 Gym Expenses Log & Tracking</td>
+                  <td class="py-3 px-4 text-center font-bold text-rose-400">🔒 Locked</td>
+                  <td class="py-3 px-4 text-center font-bold text-cyan-400">✅ Full Access</td>
+                </tr>
+                <tr class="bg-cyan-950/20">
+                  <td class="py-3 px-4 font-bold text-cyan-300">📈 Profit & Loss (P&L) Net Margin Hero</td>
+                  <td class="py-3 px-4 text-center font-bold text-rose-400">🔒 Masked ("Pro P&L Locked")</td>
+                  <td class="py-3 px-4 text-center font-bold text-cyan-400">✅ Real-Time Net Profit/Loss</td>
+                </tr>
+                <tr class="bg-cyan-950/20">
+                  <td class="py-3 px-4 font-bold text-cyan-300">💳 Member In-Store Razorpay Checkout</td>
+                  <td class="py-3 px-4 text-center font-bold text-rose-400">🔒 Disabled</td>
+                  <td class="py-3 px-4 text-center font-bold text-cyan-400">✅ Enabled</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </main>
     </div>
   </div>
@@ -169,16 +248,16 @@
       try {
         const sub = await Api.getGymSubscription(CONFIG.GYM_ID);
         if (sub) {
-          document.getElementById('active-plan-title').textContent = sub.plan_name || sub.plan_id;
-          document.getElementById('active-plan-expiry').textContent = `Valid Until: ${Utils.formatDate(sub.end_date)}`;
+          document.getElementById('active-plan-title').textContent = sub.planTitle || sub.planName || sub.plan_name || sub.planId || sub.plan_id;
+          document.getElementById('active-plan-expiry').textContent = `Valid Until: ${sub.expiryDate || Utils.formatDate(sub.end_date)}`;
 
           const storeBadge = document.getElementById('active-store-status');
-          if (sub.has_store_feature !== false) {
+          if (sub.hasStore === true) {
             storeBadge.className = 'px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-400 font-bold';
-            storeBadge.textContent = '🛒 Gym Store Enabled';
+            storeBadge.textContent = '🛒 Store & Expenses Enabled';
           } else {
             storeBadge.className = 'px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold';
-            storeBadge.textContent = '🔒 Gym Store Locked (Basic Plan)';
+            storeBadge.textContent = '🔒 Store & Expenses Locked';
           }
         }
       } catch (err) {
