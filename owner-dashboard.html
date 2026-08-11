@@ -25,97 +25,6 @@
       border: 1px solid rgba(244, 63, 94, 0.4);
       box-shadow: 0 0 30px rgba(244, 63, 94, 0.15);
     }
-
-    /* ===== MOBILE RESPONSIVE OVERRIDES ===== */
-
-    /* Mobile-optimized scrollable tabs */
-    .mobile-scroll-tabs {
-      display: flex;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-      scroll-snap-type: x mandatory;
-      gap: 0.25rem;
-    }
-    .mobile-scroll-tabs::-webkit-scrollbar { display: none; }
-    .mobile-scroll-tabs > button { scroll-snap-align: start; flex-shrink: 0; }
-
-    /* Mobile card-style table rows */
-    @media (max-width: 639px) {
-      .responsive-table thead { display: none; }
-      .responsive-table tbody tr {
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-        padding: 0.75rem 1rem;
-        border-bottom: 1px solid rgba(55, 65, 81, 0.4);
-      }
-      .responsive-table tbody td {
-        padding: 0.15rem 0 !important;
-        text-align: left !important;
-      }
-      .responsive-table tbody td::before {
-        content: attr(data-label);
-        display: inline-block;
-        font-size: 10px;
-        font-weight: 700;
-        color: #9CA3AF;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-right: 0.5rem;
-        min-width: 80px;
-      }
-      /* Hide redundant labels on action columns */
-      .responsive-table tbody td[data-label=""]::before { display: none; }
-    }
-
-    /* Bottom mobile nav bar */
-    .mobile-bottom-nav {
-      display: none;
-    }
-    @media (max-width: 1023px) {
-      .mobile-bottom-nav {
-        display: flex;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 50;
-        background: rgba(17, 24, 39, 0.95);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border-top: 1px solid rgba(55, 65, 81, 0.6);
-        padding: 0.35rem 0.5rem;
-        padding-bottom: max(0.35rem, env(safe-area-inset-bottom));
-        justify-content: space-around;
-        align-items: center;
-      }
-      .mobile-bottom-nav a {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.15rem;
-        padding: 0.35rem 0.5rem;
-        border-radius: 0.75rem;
-        font-size: 10px;
-        font-weight: 600;
-        color: #9CA3AF;
-        transition: all 0.2s;
-        text-decoration: none;
-        min-width: 48px;
-      }
-      .mobile-bottom-nav a.active {
-        color: #10B981;
-        background: rgba(16, 185, 129, 0.1);
-      }
-      .mobile-bottom-nav a span.nav-icon {
-        font-size: 18px;
-        line-height: 1;
-      }
-      /* Add padding at bottom of page to prevent content hiding behind nav */
-      body { padding-bottom: 70px; }
-    }
   </style>
 </head>
 <body class="bg-[#090D16] text-gray-100 min-h-screen">
@@ -125,7 +34,7 @@
     <div id="sidebar-container"></div>
 
     <!-- Main Content Area -->
-    <div class="flex-1 lg:pl-64 flex flex-col min-h-screen">
+    <div class="flex-1 lg:pl-64 flex flex-col min-h-screen min-w-0 max-w-full overflow-x-hidden">
       <!-- SaaS Subscription Renewal & App Blocking Modal -->
   <div id="sub-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto">
     <div class="glass-card bg-gray-900/95 border-emerald-500/30 w-full max-w-4xl rounded-3xl p-6 sm:p-8 space-y-6 relative max-h-[90vh] overflow-y-auto">
@@ -171,82 +80,82 @@
   </div>
 
       <!-- Subscription Warning Top Banner (7-day alert) -->
-      <div id="sub-warning-banner" class="hidden bg-amber-500/20 border-b border-amber-500/40 text-amber-300 px-3 sm:px-6 py-2.5 sm:py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3 text-xs sm:text-sm font-semibold sticky top-0 z-40 backdrop-blur-md">
-        <div class="flex items-start sm:items-center space-x-2 min-w-0">
-          <span class="text-lg sm:text-xl flex-shrink-0">⚠️</span>
-          <span id="sub-warning-text" class="leading-snug">Your GymSarthi SaaS Subscription expires soon! Renew to keep app active.</span>
+      <div id="sub-warning-banner" class="hidden bg-amber-500/20 border-b border-amber-500/40 text-amber-300 px-3 sm:px-6 py-2.5 sm:py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3 text-xs sm:text-sm font-semibold sticky top-0 z-40 backdrop-blur-md max-w-full overflow-hidden">
+        <div class="flex items-start space-x-2 min-w-0 max-w-full">
+          <span class="text-base sm:text-xl shrink-0">⚠️</span>
+          <span id="sub-warning-text" class="break-words leading-tight">Your GymSarthi SaaS Subscription expires soon! Renew to keep app active.</span>
         </div>
-        <button onclick="openRenewModal()" class="px-3 sm:px-4 py-1.5 bg-amber-500 hover:bg-amber-400 text-black font-extrabold rounded-lg text-[11px] sm:text-xs transition shadow-lg flex items-center space-x-1 flex-shrink-0 w-full sm:w-auto justify-center sm:justify-start">
+        <button onclick="openRenewModal()" class="w-full sm:w-auto px-3 sm:px-4 py-1.5 bg-amber-500 hover:bg-amber-400 text-black font-extrabold rounded-lg text-[11px] sm:text-xs transition shadow-lg flex items-center justify-center space-x-1 shrink-0">
           <span>Renew Subscription Now</span> <span>🚀</span>
         </button>
       </div>
 
       <!-- Top Mobile Navigation Header -->
-      <header class="h-14 sm:h-20 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800 flex items-center justify-between px-3 sm:px-6 sticky top-0 z-30">
-        <div class="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
-          <button id="mobile-menu-toggle" class="lg:hidden p-2 text-gray-400 hover:text-white rounded-lg flex-shrink-0">
+      <header class="h-16 sm:h-20 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800 flex items-center justify-between px-2 sm:px-6 sticky top-0 z-30 min-w-0 max-w-full overflow-hidden">
+        <div class="flex items-center space-x-1.5 sm:space-x-4 overflow-hidden min-w-0 flex-1">
+          <button id="mobile-menu-toggle" class="lg:hidden p-1.5 text-gray-400 hover:text-white rounded-lg focus:outline-none shrink-0">
             ☰
           </button>
-          <div class="min-w-0">
-            <h1 class="text-sm sm:text-xl font-bold text-white truncate">Owner Dashboard</h1>
+          <div class="truncate min-w-0">
+            <h1 class="text-xs sm:text-xl font-bold text-white truncate">Owner Executive Dashboard</h1>
             <p class="text-[10px] sm:text-xs text-gray-400 truncate hidden sm:block">GymSarthi Real-time Financial Health & Retention Engine</p>
           </div>
         </div>
 
-        <div class="header-actions flex items-center space-x-1.5 sm:space-x-3 flex-shrink-0">
-          <button onclick="loadDashboardMetrics()" class="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-gray-800 hover:bg-gray-700 text-emerald-400 transition-colors" title="Refresh Live Metrics">
+        <div class="flex items-center space-x-1.5 sm:space-x-3 shrink-0 ml-1 sm:ml-2">
+          <button onclick="loadDashboardMetrics(true)" class="p-1.5 sm:p-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-emerald-400 transition-colors text-xs shrink-0" title="Refresh Live Metrics">
             🔄
           </button>
-          <span id="plan-badge" class="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 truncate max-w-[100px] sm:max-w-none">
+          <span id="plan-badge" class="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[9px] sm:text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 truncate max-w-[110px] sm:max-w-none">
             PRO PLAN ACTIVE
           </span>
         </div>
       </header>
 
       <!-- Dashboard Body -->
-      <main class="p-3 sm:p-6 space-y-4 sm:space-y-6 flex-1">
+      <main class="p-3 sm:p-6 space-y-4 sm:space-y-6 flex-1 pb-24 lg:pb-6">
 
         <!-- HERO SECTION: PROFIT OR LOSS EXECUTIVE SUMMARY CARD -->
-        <div id="profit-loss-hero" class="glass-card p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl transition-all duration-300 relative overflow-hidden profit-card-emerald">
+        <div id="profit-loss-hero" class="glass-card p-4 sm:p-8 rounded-3xl transition-all duration-300 relative overflow-hidden profit-card-emerald">
           <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-6 relative z-10">
             
             <!-- Left Column: Net Result -->
             <div class="space-y-2 w-full lg:w-auto">
               <div class="flex flex-wrap items-center gap-2">
-                <span id="pnl-status-badge" class="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 uppercase tracking-wider flex items-center space-x-1.5">
+                <span id="pnl-status-badge" class="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 uppercase tracking-wider flex items-center space-x-1.5">
                   <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
                   <span id="pnl-badge-text">NET PROFIT ACTIVE</span>
                 </span>
-                <span class="text-[10px] sm:text-xs text-gray-400">Monthly P&L Audit</span>
+                <span class="text-xs text-gray-400">Monthly P&L Audit</span>
               </div>
 
               <div class="flex flex-wrap items-baseline gap-2 sm:gap-3">
-                <h2 id="kpi-net-profit" class="text-2xl sm:text-4xl lg:text-5xl font-black text-emerald-400 tracking-tight">₹0</h2>
-                <span id="kpi-margin-text" class="text-xs sm:text-sm font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-gray-800/80 text-emerald-400 border border-emerald-500/30">
+                <h2 id="kpi-net-profit" class="text-3xl sm:text-5xl font-black text-emerald-400 tracking-tight">₹0</h2>
+                <span id="kpi-margin-text" class="text-xs sm:text-sm font-bold px-2.5 py-1 rounded-lg bg-gray-800/80 text-emerald-400 border border-emerald-500/30">
                   +0% Net Margin
                 </span>
               </div>
 
-              <p class="text-xs text-gray-300">Net earnings calculated after deducting all operational costs from total gym sales.</p>
+              <p class="text-[11px] sm:text-xs text-gray-300 leading-normal">Net earnings calculated after deducting all operational costs from total gym sales.</p>
             </div>
 
             <!-- Right Column: Financial Breakdown Bars -->
-            <div class="w-full lg:w-96 space-y-2 sm:space-y-3 bg-gray-950/60 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-gray-800/80">
-              <div class="flex justify-between text-[11px] sm:text-xs font-bold">
+            <div class="w-full lg:w-96 space-y-3 bg-gray-950/60 p-3.5 sm:p-4 rounded-2xl border border-gray-800/80">
+              <div class="flex justify-between text-xs font-bold">
                 <span class="text-gray-300">Total Sales (Revenue):</span>
                 <span id="hero-total-sales" class="text-emerald-400">₹0</span>
               </div>
-              <div class="flex justify-between text-[11px] sm:text-xs font-bold">
+              <div class="flex justify-between text-xs font-bold">
                 <span class="text-gray-300">Total Expenses (Outflow):</span>
                 <span id="hero-total-expenses" class="text-rose-400">₹0</span>
               </div>
 
               <!-- Visual Progress Bar -->
-              <div class="w-full h-2.5 sm:h-3 bg-gray-900 rounded-full overflow-hidden flex">
+              <div class="w-full h-3 bg-gray-900 rounded-full overflow-hidden flex">
                 <div id="bar-sales" class="bg-emerald-500 h-full transition-all" style="width: 50%"></div>
                 <div id="bar-expense" class="bg-rose-500 h-full transition-all" style="width: 50%"></div>
               </div>
-              <div class="flex justify-between text-[9px] sm:text-[10px] text-gray-400 font-semibold">
+              <div class="flex justify-between text-[10px] text-gray-400 font-semibold">
                 <span>Revenue Share</span>
                 <span>Expense Share</span>
               </div>
@@ -256,128 +165,128 @@
         </div>
 
         <!-- Metric KPI Cards Grid (6 Dedicated Cards) -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-4">
+        <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
           <!-- 1. Active Members -->
-          <div class="glass-card p-3 sm:p-4 rounded-xl sm:rounded-2xl border-emerald-500/30 bg-emerald-950/10 glass-card-hover">
-            <div class="flex items-center justify-between text-emerald-400 text-[10px] sm:text-xs font-bold uppercase">
-              <span>Active Members</span>
+          <div class="glass-card p-3.5 sm:p-4 rounded-2xl border-emerald-500/30 bg-emerald-950/10 glass-card-hover">
+            <div class="flex items-center justify-between text-emerald-400 text-xs font-bold uppercase">
+              <span class="truncate">Active Members</span>
               <span>🟢</span>
             </div>
-            <p id="kpi-active-members" class="text-xl sm:text-2xl font-black text-white mt-1.5 sm:mt-2">0</p>
-            <p class="text-[10px] sm:text-[11px] text-emerald-400 mt-0.5 sm:mt-1">Enrolled & Valid</p>
+            <p id="kpi-active-members" class="text-xl sm:text-2xl font-black text-white mt-1.5">0</p>
+            <p class="text-[10px] sm:text-[11px] text-emerald-400 mt-1">Enrolled & Valid</p>
           </div>
 
           <!-- 2. Leave / Inactive Members -->
-          <div class="glass-card p-3 sm:p-4 rounded-xl sm:rounded-2xl border-rose-500/30 bg-rose-950/10 glass-card-hover">
-            <div class="flex items-center justify-between text-rose-400 text-[10px] sm:text-xs font-bold uppercase">
-              <span>Leave / Absent</span>
+          <div class="glass-card p-3.5 sm:p-4 rounded-2xl border-rose-500/30 bg-rose-950/10 glass-card-hover">
+            <div class="flex items-center justify-between text-rose-400 text-xs font-bold uppercase">
+              <span class="truncate">Leave / Absent</span>
               <span>🚨</span>
             </div>
-            <p id="kpi-leave-members" class="text-xl sm:text-2xl font-black text-rose-400 mt-1.5 sm:mt-2">0</p>
-            <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5 sm:mt-1">3+ Days Absent / Expired</p>
+            <p id="kpi-leave-members" class="text-xl sm:text-2xl font-black text-rose-400 mt-1.5">0</p>
+            <p class="text-[10px] sm:text-[11px] text-gray-400 mt-1 truncate">3+ Days Absent</p>
           </div>
 
           <!-- 3. Memberships Sold -->
-          <div class="glass-card p-3 sm:p-4 rounded-xl sm:rounded-2xl border-gray-800 glass-card-hover">
-            <div class="flex items-center justify-between text-gray-400 text-[10px] sm:text-xs font-bold uppercase">
-              <span>Memberships</span>
+          <div class="glass-card p-3.5 sm:p-4 rounded-2xl border-gray-800 glass-card-hover">
+            <div class="flex items-center justify-between text-gray-400 text-xs font-bold uppercase">
+              <span class="truncate">Memberships</span>
               <span>🏷️</span>
             </div>
-            <p id="kpi-memberships-count" class="text-xl sm:text-2xl font-black text-cyan-400 mt-1.5 sm:mt-2">0</p>
-            <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5 sm:mt-1">Active Passes</p>
+            <p id="kpi-memberships-count" class="text-xl sm:text-2xl font-black text-cyan-400 mt-1.5">0</p>
+            <p class="text-[10px] sm:text-[11px] text-gray-400 mt-1">Active Passes</p>
           </div>
 
           <!-- 4. Total Sales -->
-          <div class="glass-card p-3 sm:p-4 rounded-xl sm:rounded-2xl border-gray-800 glass-card-hover">
-            <div class="flex items-center justify-between text-gray-400 text-[10px] sm:text-xs font-bold uppercase">
-              <span>Total Sales</span>
+          <div class="glass-card p-3.5 sm:p-4 rounded-2xl border-gray-800 glass-card-hover">
+            <div class="flex items-center justify-between text-gray-400 text-xs font-bold uppercase">
+              <span class="truncate">Total Sales</span>
               <span>💰</span>
             </div>
-            <p id="kpi-total-sales" class="text-xl sm:text-2xl font-black text-emerald-400 mt-1.5 sm:mt-2">₹0</p>
-            <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5 sm:mt-1">Passes + Store Orders</p>
+            <p id="kpi-total-sales" class="text-xl sm:text-2xl font-black text-emerald-400 mt-1.5">₹0</p>
+            <p class="text-[10px] sm:text-[11px] text-gray-400 mt-1 truncate">Passes + Store</p>
           </div>
 
           <!-- 5. Total Expenses -->
-          <div class="glass-card p-3 sm:p-4 rounded-xl sm:rounded-2xl border-gray-800 glass-card-hover">
-            <div class="flex items-center justify-between text-gray-400 text-[10px] sm:text-xs font-bold uppercase">
-              <span>Total Expenses</span>
+          <div class="glass-card p-3.5 sm:p-4 rounded-2xl border-gray-800 glass-card-hover">
+            <div class="flex items-center justify-between text-gray-400 text-xs font-bold uppercase">
+              <span class="truncate">Total Expenses</span>
               <span>💸</span>
             </div>
-            <p id="kpi-total-expenses" class="text-xl sm:text-2xl font-black text-rose-400 mt-1.5 sm:mt-2">₹0</p>
-            <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5 sm:mt-1">Rent, Salary, Power</p>
+            <p id="kpi-total-expenses" class="text-xl sm:text-2xl font-black text-rose-400 mt-1.5">₹0</p>
+            <p class="text-[10px] sm:text-[11px] text-gray-400 mt-1 truncate">Operational Costs</p>
           </div>
 
           <!-- 6. Pending Cash -->
-          <div class="glass-card p-3 sm:p-4 rounded-xl sm:rounded-2xl border-amber-500/30 bg-amber-950/10 glass-card-hover">
-            <div class="flex items-center justify-between text-amber-400 text-[10px] sm:text-xs font-bold uppercase">
-              <span>Pending Cash</span>
+          <div class="glass-card p-3.5 sm:p-4 rounded-2xl border-amber-500/30 bg-amber-950/10 glass-card-hover">
+            <div class="flex items-center justify-between text-amber-400 text-xs font-bold uppercase">
+              <span class="truncate">Pending Cash</span>
               <span>💵</span>
             </div>
-            <p id="kpi-pending-cash" class="text-xl sm:text-2xl font-black text-amber-400 mt-1.5 sm:mt-2">₹0</p>
-            <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5 sm:mt-1">Unsettled Cash</p>
+            <p id="kpi-pending-cash" class="text-xl sm:text-2xl font-black text-amber-400 mt-1.5">₹0</p>
+            <p class="text-[10px] sm:text-[11px] text-gray-400 mt-1 truncate">Unsettled Cash</p>
           </div>
         </div>
 
         <!-- DEDICATED VIEW TABS -->
-        <div class="mobile-scroll-tabs border-b border-gray-800 pb-0">
-          <button id="tab-btn-overview" onclick="switchDashboardTab('overview')" class="py-2.5 sm:py-3 px-3 sm:px-4 font-bold text-[11px] sm:text-sm border-b-2 border-emerald-500 text-emerald-400 flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
-            <span>📊 Overview</span>
+        <div class="flex border-b border-gray-800 space-x-2 sm:space-x-4 overflow-x-auto pb-1 sm:pb-0">
+          <button id="tab-btn-overview" onclick="switchDashboardTab('overview')" class="py-3 px-4 font-bold text-xs sm:text-sm border-b-2 border-emerald-500 text-emerald-400 flex items-center space-x-2 whitespace-nowrap">
+            <span>📊 Overview & Analytics</span>
           </button>
-          <button id="tab-btn-active" onclick="switchDashboardTab('active')" class="py-2.5 sm:py-3 px-3 sm:px-4 font-bold text-[11px] sm:text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
-            <span>🟢 Active</span>
-            <span id="badge-active-count" class="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] bg-emerald-500/20 text-emerald-400">0</span>
+          <button id="tab-btn-active" onclick="switchDashboardTab('active')" class="py-3 px-4 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap">
+            <span>🟢 Active Members</span>
+            <span id="badge-active-count" class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-400">0</span>
           </button>
-          <button id="tab-btn-leave" onclick="switchDashboardTab('leave')" class="py-2.5 sm:py-3 px-3 sm:px-4 font-bold text-[11px] sm:text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
-            <span>🔴 Leave</span>
-            <span id="badge-leave-count" class="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] bg-rose-500/20 text-rose-400">0</span>
+          <button id="tab-btn-leave" onclick="switchDashboardTab('leave')" class="py-3 px-4 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap">
+            <span>🔴 Leave / Inactive Members</span>
+            <span id="badge-leave-count" class="px-2 py-0.5 rounded-full text-[10px] bg-rose-500/20 text-rose-400">0</span>
           </button>
-          <button id="tab-btn-packages" onclick="switchDashboardTab('packages')" class="py-2.5 sm:py-3 px-3 sm:px-4 font-bold text-[11px] sm:text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
-            <span>🏷️ Packages</span>
+          <button id="tab-btn-packages" onclick="switchDashboardTab('packages')" class="py-3 px-4 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap">
+            <span>🏷️ Memberships & Packages</span>
           </button>
         </div>
 
         <!-- TAB 1: OVERVIEW & ANALYTICS VIEW -->
         <div id="dash-section-overview" class="space-y-6">
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
             <!-- Gate QR Poster Card -->
-            <div class="glass-card p-4 sm:p-6 rounded-2xl sm:rounded-3xl border-gray-800 text-center space-y-3 sm:space-y-4">
-              <div class="flex items-center justify-between border-b border-gray-800 pb-2 sm:pb-3">
-                <h3 class="font-bold text-white text-xs sm:text-sm">Gym Gate Attendance QR</h3>
-                <span class="text-[9px] sm:text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-1.5 sm:px-2 py-0.5 rounded">A4 Poster</span>
+            <div class="glass-card p-6 rounded-3xl border-gray-800 text-center space-y-4">
+              <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+                <h3 class="font-bold text-white text-sm">Gym Gate Attendance QR</h3>
+                <span class="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded">A4 Printable Poster</span>
               </div>
 
-              <div class="bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl inline-block shadow-xl border-4 border-emerald-500">
-                <img id="gate-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=GYM_FITNESS_001" alt="Gym Gate QR Code" class="w-32 h-32 sm:w-44 sm:h-44 mx-auto">
+              <div class="bg-white p-4 rounded-2xl inline-block shadow-xl border-4 border-emerald-500">
+                <img id="gate-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=GYM_FITNESS_001" alt="Gym Gate QR Code" class="w-44 h-44 mx-auto">
               </div>
 
               <div>
-                <p id="gate-gym-name" class="font-bold text-xs sm:text-sm text-white">PowerHouse Fitness Gym Gate</p>
-                <p class="text-[10px] sm:text-xs text-gray-400 mt-0.5">Scan with GymSarthi App to Check-In & Out</p>
+                <p id="gate-gym-name" class="font-bold text-sm text-white">PowerHouse Fitness Gym Gate</p>
+                <p class="text-xs text-gray-400 mt-0.5">Scan with GymSarthi App to Check-In & Out</p>
               </div>
 
-              <button onclick="Utils.printGateQRPoster(CONFIG.GYM_NAME, CONFIG.GYM_ID, CONFIG.GYM_ADDRESS, CONFIG.GYM_PHONE)" class="w-full py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-gray-950 font-black text-[11px] sm:text-xs shadow-lg shadow-emerald-500/20 hover:scale-[1.01] transition-all flex items-center justify-center space-x-2">
-                <span>🖨️ Print Gate Poster</span>
+              <button onclick="Utils.printGateQRPoster(CONFIG.GYM_NAME, CONFIG.GYM_ID, CONFIG.GYM_ADDRESS, CONFIG.GYM_PHONE)" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-gray-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-[1.01] transition-all flex items-center justify-center space-x-2">
+                <span>🖨️ Print High-Quality Gate Poster</span>
               </button>
             </div>
 
             <!-- Inactive Members Retention Alert Preview Table -->
-            <div class="glass-card p-4 sm:p-6 rounded-2xl sm:rounded-3xl border-gray-800 lg:col-span-2 space-y-3 sm:space-y-4">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-0">
-                <h3 class="font-bold text-white text-xs sm:text-sm flex items-center space-x-2">
-                  <span class="text-rose-400">📞 Leave Members — Phone Followup</span>
+            <div class="glass-card p-6 rounded-3xl border-gray-800 lg:col-span-2 space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="font-bold text-white text-sm flex items-center space-x-2">
+                  <span class="text-rose-400">📞 Leave Members Requiring Phone Followup</span>
                 </h3>
-                <button onclick="switchDashboardTab('leave')" class="text-[11px] sm:text-xs text-emerald-400 font-bold hover:underline">View All ➔</button>
+                <button onclick="switchDashboardTab('leave')" class="text-xs text-emerald-400 font-bold hover:underline">View All Leave Members ➔</button>
               </div>
 
-              <div class="overflow-x-auto -mx-2 sm:mx-0">
-                <table class="w-full text-left text-xs responsive-table">
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
                   <thead>
                     <tr class="border-b border-gray-800 text-gray-400 uppercase font-semibold">
-                      <th class="py-2 sm:py-2.5 px-2">Member</th>
-                      <th class="py-2 sm:py-2.5 px-2">Absence / Expiry</th>
-                      <th class="py-2 sm:py-2.5 px-2">Last Attendance</th>
-                      <th class="py-2 sm:py-2.5 px-2 text-right">Action</th>
+                      <th class="py-2.5 px-2">Member</th>
+                      <th class="py-2.5 px-2">Absence / Expiry</th>
+                      <th class="py-2.5 px-2">Last Attendance</th>
+                      <th class="py-2.5 px-2 text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody id="overview-leave-preview" class="divide-y divide-gray-800/60 text-gray-300">
@@ -392,21 +301,21 @@
 
         <!-- TAB 2: ACTIVE MEMBERS DEDICATED VIEW -->
         <div id="dash-section-active" class="space-y-4 hidden">
-          <div class="glass-card rounded-2xl sm:rounded-3xl border-gray-800 overflow-hidden">
-            <div class="p-3 sm:p-4 border-b border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-0">
-              <h3 class="font-bold text-white text-xs sm:text-sm">Active Gym Members Directory</h3>
-              <span class="text-[10px] sm:text-xs text-emerald-400 font-semibold">Active Gym Membership</span>
+          <div class="glass-card rounded-3xl border-gray-800 overflow-hidden">
+            <div class="p-4 border-b border-gray-800 flex items-center justify-between">
+              <h3 class="font-bold text-white text-sm">Active Gym Members Directory</h3>
+              <span class="text-xs text-emerald-400 font-semibold">Members with Active Gym Membership</span>
             </div>
             <div class="overflow-x-auto">
-              <table class="w-full text-left text-xs responsive-table">
+              <table class="w-full text-left text-xs">
                 <thead class="bg-gray-900/90 text-gray-400 uppercase font-semibold border-b border-gray-800">
                   <tr>
-                    <th class="py-2.5 sm:py-3 px-3 sm:px-4">Member Name</th>
-                    <th class="py-2.5 sm:py-3 px-3 sm:px-4">Mobile</th>
-                    <th class="py-2.5 sm:py-3 px-3 sm:px-4">Package</th>
-                    <th class="py-2.5 sm:py-3 px-3 sm:px-4">Start Date</th>
-                    <th class="py-2.5 sm:py-3 px-3 sm:px-4">Expiry Date</th>
-                    <th class="py-2.5 sm:py-3 px-3 sm:px-4 text-right">Payment Status</th>
+                    <th class="py-3 px-4">Member Name</th>
+                    <th class="py-3 px-4">Mobile</th>
+                    <th class="py-3 px-4">Package</th>
+                    <th class="py-3 px-4">Start Date</th>
+                    <th class="py-3 px-4">Expiry Date</th>
+                    <th class="py-3 px-4 text-right">Payment Status</th>
                   </tr>
                 </thead>
                 <tbody id="active-members-table" class="divide-y divide-gray-800/60 text-gray-300">
@@ -419,26 +328,26 @@
 
         <!-- TAB 3: LEAVE / INACTIVE MEMBERS DEDICATED VIEW -->
         <div id="dash-section-leave" class="space-y-4 hidden">
-          <div class="glass-card p-3 sm:p-4 rounded-xl sm:rounded-2xl border-rose-500/40 bg-gradient-to-r from-rose-950/20 via-gray-900 to-gray-900">
-            <div class="flex items-start sm:items-center space-x-2 sm:space-x-3">
-              <span class="text-xl sm:text-2xl flex-shrink-0">📞</span>
-              <div class="min-w-0">
-                <h3 class="font-extrabold text-xs sm:text-sm text-white">Leave & Inactive Retention Center</h3>
-                <p class="text-[10px] sm:text-xs text-gray-400 mt-0.5">Members absent 3+ days or expired membership. Call/WhatsApp to re-engage.</p>
+          <div class="glass-card p-4 rounded-2xl border-rose-500/40 bg-gradient-to-r from-rose-950/20 via-gray-900 to-gray-900 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <span class="text-2xl">📞</span>
+              <div>
+                <h3 class="font-extrabold text-sm text-white">Leave & Inactive Members Retention Center</h3>
+                <p class="text-xs text-gray-400">Members who haven't attended gym for 3+ days or whose membership has expired. Call or WhatsApp to re-engage.</p>
               </div>
             </div>
           </div>
 
-          <div class="glass-card rounded-2xl sm:rounded-3xl border-gray-800 overflow-hidden">
+          <div class="glass-card rounded-3xl border-gray-800 overflow-hidden">
             <div class="overflow-x-auto">
-              <table class="w-full text-left text-xs responsive-table">
+              <table class="w-full text-left text-xs">
                 <thead class="bg-gray-900/90 text-gray-400 uppercase font-semibold border-b border-gray-800">
                   <tr>
-                    <th class="py-2.5 sm:py-3 px-3 sm:px-4">Member Name</th>
-                    <th class="py-2.5 sm:py-3 px-3 sm:px-4">Mobile</th>
-                    <th class="py-2.5 sm:py-3 px-3 sm:px-4">Absence / Status</th>
-                    <th class="py-2.5 sm:py-3 px-3 sm:px-4">Last Attendance</th>
-                    <th class="py-2.5 sm:py-3 px-3 sm:px-4 text-center">Retention Actions</th>
+                    <th class="py-3 px-4">Member Name</th>
+                    <th class="py-3 px-4">Mobile</th>
+                    <th class="py-3 px-4">Absence / Status</th>
+                    <th class="py-3 px-4">Last Attendance</th>
+                    <th class="py-3 px-4 text-center">Retention Actions</th>
                   </tr>
                 </thead>
                 <tbody id="leave-members-table" class="divide-y divide-gray-800/60 text-gray-300">
@@ -451,42 +360,18 @@
 
         <!-- TAB 4: MEMBERSHIP & PACKAGE SALES VIEW -->
         <div id="dash-section-packages" class="space-y-4 hidden">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5" id="packages-cards-grid">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5" id="packages-cards-grid">
             <!-- Rendered dynamically -->
           </div>
         </div>
 
       </main>
 
-      <footer class="border-t border-gray-800 p-3 sm:p-4 text-center text-[10px] sm:text-xs text-gray-500 mb-16 lg:mb-0">
+      <footer class="border-t border-gray-800 p-4 text-center text-xs text-gray-500">
         GymSarthi Owner Portal • Powered by Google Apps Script REST API
       </footer>
     </div>
   </div>
-
-  <!-- Mobile Bottom Navigation Bar -->
-  <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
-    <a href="owner-dashboard.html" class="active" onclick="OwnerSidebar.handleNavClick(event, 'owner-dashboard.html')">
-      <span class="nav-icon">📊</span>
-      <span>Dashboard</span>
-    </a>
-    <a href="owner-members.html" onclick="OwnerSidebar.handleNavClick(event, 'owner-members.html')">
-      <span class="nav-icon">👥</span>
-      <span>Members</span>
-    </a>
-    <a href="owner-payments.html" onclick="OwnerSidebar.handleNavClick(event, 'owner-payments.html')">
-      <span class="nav-icon">💳</span>
-      <span>Payments</span>
-    </a>
-    <a href="owner-expenses.html" onclick="OwnerSidebar.handleNavClick(event, 'owner-expenses.html')">
-      <span class="nav-icon">💰</span>
-      <span>Expenses</span>
-    </a>
-    <a href="owner-subscription.html" onclick="OwnerSidebar.handleNavClick(event, 'owner-subscription.html')">
-      <span class="nav-icon">⚡</span>
-      <span>Plan</span>
-    </a>
-  </nav>
 
   <script src="js/config.js"></script>
   <script src="js/utils.js"></script>
@@ -519,16 +404,13 @@
           globalSubscription = dashData.subscription || null;
           globalPlans = Array.isArray(dashData.plans) ? dashData.plans : [];
 
-          // Populate Gate QR Card
+          // Populate Gate QR Card safely
           const gateQrImg = document.getElementById('gate-qr-img');
-          const gateGymName = document.getElementById('gate-gym-name');
           if (gateQrImg) gateQrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(CONFIG.GYM_ID)}`;
-          if (gateGymName) gateGymName.textContent = `${CONFIG.GYM_NAME} Gate`;
+          Utils.setElementText('gate-gym-name', `${CONFIG.GYM_NAME} Gate`);
 
-          // Process SaaS Subscription status
+          // Process SaaS Subscription status & financial metrics
           handleSubscriptionState(globalSubscription, globalPlans);
-
-          // Process Financials & Metrics
           calculateFinancials();
           renderActiveMembersTable();
           renderLeaveMembersTable();
@@ -546,24 +428,8 @@
         if (dashData) {
           renderData(dashData);
         }
-
-        // Populate Gate QR Card
-        const gateQrImg = document.getElementById('gate-qr-img');
-        const gateGymName = document.getElementById('gate-gym-name');
-        if (gateQrImg) gateQrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(CONFIG.GYM_ID)}`;
-        if (gateGymName) gateGymName.textContent = `${CONFIG.GYM_NAME} Gate`;
-
-        // Process SaaS Subscription status
-        handleSubscriptionState(globalSubscription, globalPlans);
-
-        // Process Financials & Metrics
-        calculateFinancials();
-        renderActiveMembersTable();
-        renderLeaveMembersTable();
-        renderPackagesGrid();
-
       } catch (err) {
-        console.warn('Dashboard load error:', err);
+        console.warn('Dashboard load warning:', err);
       }
     }
 
@@ -580,38 +446,40 @@
         planBadge.style.cursor = 'pointer';
       }
 
-      // 1. Check 7-day warning banner
-      if (sub.showWarningBanner || sub.daysRemaining <= 7) {
-        banner.classList.remove('hidden');
-        if (sub.isExpired || sub.hasActiveSubscription === false) {
-          warningText.innerHTML = `🚨 <b>CRITICAL ALERT</b>: GymSarthi App Subscription is <b>EXPIRED</b>. Functional access is paused.`;
+      if (banner && warningText) {
+        if (sub.showWarningBanner || sub.daysRemaining <= 7) {
+          banner.classList.remove('hidden');
+          if (sub.isExpired || sub.hasActiveSubscription === false) {
+            warningText.innerHTML = `🚨 <b>CRITICAL ALERT</b>: GymSarthi App Subscription is <b>EXPIRED</b>. Functional access is paused.`;
+          } else {
+            warningText.innerHTML = `⚠️ <b>SUBSCRIPTION EXPIRING SOON</b>: Expires in <b>${sub.daysRemaining} days</b> (${sub.expiryDate}). Renew now to prevent disruption!`;
+          }
         } else {
-          warningText.innerHTML = `⚠️ <b>SUBSCRIPTION EXPIRING SOON</b>: Expires in <b>${sub.daysRemaining} days</b> (${sub.expiryDate}). Renew now to prevent disruption!`;
+          banner.classList.add('hidden');
         }
-      } else {
-        banner.classList.add('hidden');
       }
 
-      // 2. Check blocking modal (if expired or unregistered)
       if (sub.isExpired || sub.hasActiveSubscription === false) {
-        openRenewModal(true); // isBlocking = true
+        openRenewModal(true);
       }
     }
 
     function openRenewModal(isBlocking = false) {
       const modal = document.getElementById('sub-modal');
+      if (!modal) return;
       const closeBtn = document.getElementById('sub-modal-close-btn');
-      const grid = document.getElementById('saas-plans-grid');
       const sub = globalSubscription || {};
 
-      document.getElementById('modal-sub-status').textContent = sub.status || 'Expired / Unregistered';
-      document.getElementById('modal-sub-days').textContent = sub.daysRemaining !== undefined ? `${sub.daysRemaining} Days` : '0 Days';
-      document.getElementById('modal-sub-expiry').textContent = sub.expiryDate || 'N/A';
+      Utils.setElementText('modal-sub-status', sub.status || 'Expired / Unregistered');
+      Utils.setElementText('modal-sub-days', sub.daysRemaining !== undefined ? `${sub.daysRemaining} Days` : '0 Days');
+      Utils.setElementText('modal-sub-expiry', sub.expiryDate || 'N/A');
 
-      if (isBlocking) {
-        closeBtn.classList.add('hidden');
-      } else {
-        closeBtn.classList.remove('hidden');
+      if (closeBtn) {
+        if (isBlocking) {
+          closeBtn.classList.add('hidden');
+        } else {
+          closeBtn.classList.remove('hidden');
+        }
       }
 
       renderSaasPlans(globalPlans, sub.planId);
@@ -619,11 +487,13 @@
     }
 
     function closeRenewModal() {
-      document.getElementById('sub-modal').classList.add('hidden');
+      const modal = document.getElementById('sub-modal');
+      if (modal) modal.classList.add('hidden');
     }
 
     function renderSaasPlans(plans, currentPlanId) {
       const grid = document.getElementById('saas-plans-grid');
+      if (!grid) return;
       if (!plans || plans.length === 0) {
         grid.innerHTML = `<div class="col-span-2 text-center text-gray-400 py-6">No SaaS plans found. Please initialize subscription database.</div>`;
         return;
@@ -703,9 +573,6 @@
     }
 
     function calculateFinancials() {
-      const activeEl = document.getElementById('kpi-active-members');
-      if (!activeEl) return; // Unmounted guard
-
       // Total Sales / Revenue
       const totalSales = globalPayments
         .filter(p => p.status === 'SUCCESS' || p.status === 'COMPLETED' || p.status === 'PAID')
@@ -726,33 +593,21 @@
       const activeMembers = globalMembers.filter(m => (m.status || 'ACTIVE').toUpperCase() === 'ACTIVE');
       const leaveMembers = globalInactives.length > 0 ? globalInactives : globalMembers.filter(m => (m.status || '').toUpperCase() !== 'ACTIVE' || (m.days_absent && m.days_absent >= 3));
 
-      // Update KPIs
-      activeEl.textContent = activeMembers.length;
-      const bActive = document.getElementById('badge-active-count');
-      if (bActive) bActive.textContent = activeMembers.length;
+      // Update KPIs safely
+      Utils.setElementText('kpi-active-members', activeMembers.length);
+      Utils.setElementText('badge-active-count', activeMembers.length);
 
-      const kpiLeave = document.getElementById('kpi-leave-members');
-      if (kpiLeave) kpiLeave.textContent = leaveMembers.length;
-      const bLeave = document.getElementById('badge-leave-count');
-      if (bLeave) bLeave.textContent = leaveMembers.length;
+      Utils.setElementText('kpi-leave-members', leaveMembers.length);
+      Utils.setElementText('badge-leave-count', leaveMembers.length);
 
-      const kpiMem = document.getElementById('kpi-memberships-count');
-      if (kpiMem) kpiMem.textContent = globalMembers.length;
-
-      const kpiSales = document.getElementById('kpi-total-sales');
-      if (kpiSales) kpiSales.textContent = `₹${totalSales.toLocaleString('en-IN')}`;
-
-      const kpiExp = document.getElementById('kpi-total-expenses');
-      if (kpiExp) kpiExp.textContent = `₹${totalExpenses.toLocaleString('en-IN')}`;
-
-      const kpiPend = document.getElementById('kpi-pending-cash');
-      if (kpiPend) kpiPend.textContent = `₹${pendingCash.toLocaleString('en-IN')}`;
+      Utils.setElementText('kpi-memberships-count', globalMembers.length);
+      Utils.setElementText('kpi-total-sales', `₹${totalSales.toLocaleString('en-IN')}`);
+      Utils.setElementText('kpi-total-expenses', `₹${totalExpenses.toLocaleString('en-IN')}`);
+      Utils.setElementText('kpi-pending-cash', `₹${pendingCash.toLocaleString('en-IN')}`);
 
       // Update Hero Profit/Loss Card
-      const heroSales = document.getElementById('hero-total-sales');
-      if (heroSales) heroSales.textContent = `₹${totalSales.toLocaleString('en-IN')}`;
-      const heroExp = document.getElementById('hero-total-expenses');
-      if (heroExp) heroExp.textContent = `₹${totalExpenses.toLocaleString('en-IN')}`;
+      Utils.setElementText('hero-total-sales', `₹${totalSales.toLocaleString('en-IN')}`);
+      Utils.setElementText('hero-total-expenses', `₹${totalExpenses.toLocaleString('en-IN')}`);
 
       const heroCard = document.getElementById('profit-loss-hero');
       const netEl = document.getElementById('kpi-net-profit');
@@ -764,20 +619,20 @@
 
       if (globalSubscription && !globalSubscription.hasStore) {
         // Locked P&L State on Basic / Non-Store Plan
-        heroCard.className = 'glass-card p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl transition-all duration-300 relative overflow-hidden border-amber-500/40 bg-amber-950/20';
+        heroCard.className = 'glass-card p-6 sm:p-8 rounded-3xl transition-all duration-300 relative overflow-hidden border-amber-500/40 bg-amber-950/20';
         netEl.textContent = '🔒 Pro P&L Locked';
-        netEl.className = 'text-xl sm:text-3xl lg:text-4xl font-black text-amber-400 tracking-tight';
+        netEl.className = 'text-3xl sm:text-4xl font-black text-amber-400 tracking-tight';
         if (badgeText) badgeText.textContent = 'PRO PLAN REQUIRED';
-        if (badgeContainer) badgeContainer.className = 'px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/40 uppercase tracking-wider flex items-center space-x-1.5';
+        if (badgeContainer) badgeContainer.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/40 uppercase tracking-wider flex items-center space-x-1.5';
         if (marginEl) {
           marginEl.textContent = '⚡ Upgrade to Pro';
           marginEl.className = 'text-xs font-bold px-3 py-1 rounded-lg bg-gradient-to-r from-emerald-500 to-cyan-500 text-gray-950 shadow hover:scale-105 transition-all cursor-pointer';
           marginEl.onclick = () => window.location.href = 'owner-subscription.html';
         }
 
-        if (heroSales) heroSales.textContent = `₹${totalSales.toLocaleString('en-IN')}`;
-        if (heroExp) heroExp.textContent = '🔒 Pro Locked';
-        if (kpiExp) kpiExp.textContent = '🔒 Pro Locked';
+        Utils.setElementText('hero-total-sales', `₹${totalSales.toLocaleString('en-IN')}`);
+        Utils.setElementText('hero-total-expenses', '🔒 Pro Locked');
+        Utils.setElementText('kpi-total-expenses', '🔒 Pro Locked');
         return;
       }
 
@@ -785,25 +640,25 @@
       const marginPct = totalSales > 0 ? Math.round((netProfitOrLoss / totalSales) * 100) : 0;
 
       if (isProfit) {
-        heroCard.className = 'glass-card p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl transition-all duration-300 relative overflow-hidden profit-card-emerald';
+        heroCard.className = 'glass-card p-6 sm:p-8 rounded-3xl transition-all duration-300 relative overflow-hidden profit-card-emerald';
         netEl.textContent = `+ ₹${netProfitOrLoss.toLocaleString('en-IN')}`;
-        netEl.className = 'text-2xl sm:text-4xl lg:text-5xl font-black text-emerald-400 tracking-tight';
+        netEl.className = 'text-4xl sm:text-5xl font-black text-emerald-400 tracking-tight';
         if (badgeText) badgeText.textContent = 'NET PROFIT ACTIVE';
-        if (badgeContainer) badgeContainer.className = 'px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 uppercase tracking-wider flex items-center space-x-1.5';
+        if (badgeContainer) badgeContainer.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 uppercase tracking-wider flex items-center space-x-1.5';
         if (marginEl) {
           marginEl.textContent = `+${marginPct}% Net Margin`;
-          marginEl.className = 'text-xs sm:text-sm font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-gray-800/80 text-emerald-400 border border-emerald-500/30';
+          marginEl.className = 'text-sm font-bold px-2.5 py-1 rounded-lg bg-gray-800/80 text-emerald-400 border border-emerald-500/30';
           marginEl.onclick = null;
         }
       } else {
-        heroCard.className = 'glass-card p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl transition-all duration-300 relative overflow-hidden loss-card-rose';
+        heroCard.className = 'glass-card p-6 sm:p-8 rounded-3xl transition-all duration-300 relative overflow-hidden loss-card-rose';
         netEl.textContent = `- ₹${Math.abs(netProfitOrLoss).toLocaleString('en-IN')}`;
-        netEl.className = 'text-2xl sm:text-4xl lg:text-5xl font-black text-rose-400 tracking-tight';
+        netEl.className = 'text-4xl sm:text-5xl font-black text-rose-400 tracking-tight';
         if (badgeText) badgeText.textContent = 'NET LOSS ALERT';
-        if (badgeContainer) badgeContainer.className = 'px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-extrabold bg-rose-500/20 text-rose-400 border border-rose-500/40 uppercase tracking-wider flex items-center space-x-1.5';
+        if (badgeContainer) badgeContainer.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-rose-500/20 text-rose-400 border border-rose-500/40 uppercase tracking-wider flex items-center space-x-1.5';
         if (marginEl) {
           marginEl.textContent = `${marginPct}% Net Margin`;
-          marginEl.className = 'text-xs sm:text-sm font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-gray-800/80 text-rose-400 border border-rose-500/30';
+          marginEl.className = 'text-sm font-bold px-2.5 py-1 rounded-lg bg-gray-800/80 text-rose-400 border border-rose-500/30';
           marginEl.onclick = null;
         }
       }
@@ -814,9 +669,9 @@
       const expPct = Math.round((totalExpenses / maxVal) * 100);
 
       const barSales = document.getElementById('bar-sales');
-      const barExp = document.getElementById('bar-expense');
+      const barExpense = document.getElementById('bar-expense');
       if (barSales) barSales.style.width = `${Math.min(salesPct, 100)}%`;
-      if (barExp) barExp.style.width = `${Math.min(expPct, 100)}%`;
+      if (barExpense) barExpense.style.width = `${Math.min(expPct, 100)}%`;
     }
 
     function renderActiveMembersTable() {
@@ -831,23 +686,21 @@
 
       tbody.innerHTML = activeList.map(m => `
         <tr class="hover:bg-gray-900/40">
-          <td data-label="Name" class="py-2.5 sm:py-3.5 px-3 sm:px-4 font-bold text-white">
+          <td class="py-3.5 px-4 font-bold text-white">
             <div>${m.name || 'Member'}</div>
-            <div class="text-[10px] sm:text-[11px] text-gray-500">${m.member_id || ''}</div>
+            <div class="text-[11px] text-gray-500">${m.member_id || ''}</div>
           </td>
-          <td data-label="Mobile" class="py-2.5 sm:py-3.5 px-3 sm:px-4 text-gray-300 font-medium">+91 ${m.mobile || ''}</td>
-          <td data-label="Package" class="py-2.5 sm:py-3.5 px-3 sm:px-4 font-semibold text-emerald-400">${m.package_name || 'Standard'}</td>
-          <td data-label="Start" class="py-2.5 sm:py-3.5 px-3 sm:px-4 text-gray-400 text-xs">${Utils.formatDate(m.start_date)}</td>
-          <td data-label="Expiry" class="py-2.5 sm:py-3.5 px-3 sm:px-4 text-gray-400 text-xs">${Utils.formatDate(m.expiry_date)}</td>
-          <td data-label="" class="py-2.5 sm:py-3.5 px-3 sm:px-4 text-right">
-            <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 justify-end sm:justify-end">
-              <span class="px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] font-bold ${m.payment_status === 'PENDING_CASH' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}">
-                ${m.payment_status || 'PAID'}
-              </span>
-              <button onclick='Utils.printMemberIDCard(${JSON.stringify(m).replace(/'/g, "&apos;")}, CONFIG.GYM_NAME)' class="px-2 sm:px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-[10px] sm:text-[11px] border border-gray-700 transition inline-flex items-center space-x-1" title="Print Member QR ID Card">
-                <span>Print ID</span> <span>💳</span>
-              </button>
-            </div>
+          <td class="py-3.5 px-4 text-gray-300 font-medium">+91 ${m.mobile || ''}</td>
+          <td class="py-3.5 px-4 font-semibold text-emerald-400">${m.package_name || 'Standard'}</td>
+          <td class="py-3.5 px-4 text-gray-400 text-xs">${Utils.formatDate(m.start_date)}</td>
+          <td class="py-3.5 px-4 text-gray-400 text-xs">${Utils.formatDate(m.expiry_date)}</td>
+          <td class="py-3.5 px-4 text-right space-x-2">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${m.payment_status === 'PENDING_CASH' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}">
+              ${m.payment_status || 'PAID'}
+            </span>
+            <button onclick='Utils.printMemberIDCard(${JSON.stringify(m).replace(/'/g, "&apos;")}, CONFIG.GYM_NAME)' class="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-[11px] border border-gray-700 transition inline-flex items-center space-x-1" title="Print Member QR ID Card">
+              <span>Print ID</span> <span>💳</span>
+            </button>
           </td>
         </tr>
       `).join('');
@@ -872,15 +725,15 @@
         if (isOverview) {
           return `
             <tr class="hover:bg-gray-900/40">
-              <td data-label="Name" class="py-2.5 sm:py-3 px-2 font-bold text-white">${m.name || 'Member'}</td>
-              <td data-label="Status" class="py-2.5 sm:py-3 px-2">
+              <td class="py-3 px-2 font-bold text-white">${m.name || 'Member'}</td>
+              <td class="py-3 px-2">
                 <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
                   ${m.days_absent ? `${m.days_absent} Days Absent` : (m.status || 'EXPIRED')}
                 </span>
               </td>
-              <td data-label="Last Seen" class="py-2.5 sm:py-3 px-2 text-xs text-gray-400">${Utils.formatDate(m.last_attendance_date)}</td>
-              <td data-label="" class="py-2.5 sm:py-3 px-2 text-right">
-                <a href="tel:+91${m.mobile || ''}" class="px-2 sm:px-2.5 py-1 rounded-lg bg-rose-500 hover:bg-rose-600 text-white font-bold text-[10px] sm:text-[11px] inline-flex items-center space-x-1">
+              <td class="py-3 px-2 text-xs text-gray-400">${Utils.formatDate(m.last_attendance_date)}</td>
+              <td class="py-3 px-2 text-right">
+                <a href="tel:+91${m.mobile || ''}" class="px-2.5 py-1 rounded-lg bg-rose-500 hover:bg-rose-600 text-white font-bold text-[11px] inline-flex items-center space-x-1">
                   <span>Call</span> <span>📞</span>
                 </a>
               </td>
@@ -890,30 +743,26 @@
 
         return `
           <tr class="hover:bg-gray-900/40">
-            <td data-label="Name" class="py-2.5 sm:py-3.5 px-3 sm:px-4 font-bold text-white">
-              <div class="flex items-center space-x-2 sm:space-x-3">
-                <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center font-bold text-[10px] sm:text-xs flex-shrink-0">
-                  ${(m.name || 'M').charAt(0)}
-                </div>
-                <span>${m.name || 'Member'}</span>
+            <td class="py-3.5 px-4 font-bold text-white flex items-center space-x-3">
+              <div class="w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center font-bold text-xs">
+                ${(m.name || 'M').charAt(0)}
               </div>
+              <span>${m.name || 'Member'}</span>
             </td>
-            <td data-label="Mobile" class="py-2.5 sm:py-3.5 px-3 sm:px-4 font-semibold text-gray-300">+91 ${m.mobile || ''}</td>
-            <td data-label="Status" class="py-2.5 sm:py-3.5 px-3 sm:px-4">
-              <span class="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-black bg-rose-500/20 text-rose-400 border border-rose-500/30">
+            <td class="py-3.5 px-4 font-semibold text-gray-300">+91 ${m.mobile || ''}</td>
+            <td class="py-3.5 px-4">
+              <span class="px-2.5 py-1 rounded-full text-xs font-black bg-rose-500/20 text-rose-400 border border-rose-500/30">
                 ${m.days_absent ? `⚠️ ${m.days_absent} Days Absent` : `🛑 ${m.status || 'EXPIRED'}`}
               </span>
             </td>
-            <td data-label="Last Seen" class="py-2.5 sm:py-3.5 px-3 sm:px-4 text-gray-400 text-xs">${Utils.formatDate(m.last_attendance_date)}</td>
-            <td data-label="" class="py-2.5 sm:py-3.5 px-3 sm:px-4 text-center">
-              <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 justify-center sm:justify-center">
-                <a href="tel:+91${m.mobile || ''}" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white font-bold text-[10px] sm:text-xs inline-flex items-center space-x-1 shadow">
-                  <span>Call</span> <span>📞</span>
-                </a>
-                <a href="https://wa.me/91${m.mobile || ''}?text=${whatsappMsg}" target="_blank" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] sm:text-xs inline-flex items-center space-x-1 shadow">
-                  <span>WhatsApp</span> <span>💬</span>
-                </a>
-              </div>
+            <td class="py-3.5 px-4 text-gray-400 text-xs">${Utils.formatDate(m.last_attendance_date)}</td>
+            <td class="py-3.5 px-4 text-center space-x-2">
+              <a href="tel:+91${m.mobile || ''}" class="px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs inline-flex items-center space-x-1 shadow">
+                <span>Call Now</span> <span>📞</span>
+              </a>
+              <a href="https://wa.me/91${m.mobile || ''}?text=${whatsappMsg}" target="_blank" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center space-x-1 shadow">
+                <span>WhatsApp</span> <span>💬</span>
+              </a>
             </td>
           </tr>
         `;
@@ -963,21 +812,24 @@
         const btn = document.getElementById(`tab-btn-${t}`);
         const sec = document.getElementById(`dash-section-${t}`);
 
-        if (t === tab) {
-          btn.className = 'py-2.5 sm:py-3 px-3 sm:px-4 font-bold text-[11px] sm:text-sm border-b-2 border-emerald-500 text-emerald-400 flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap';
-          sec.classList.remove('hidden');
-        } else {
-          btn.className = 'py-2.5 sm:py-3 px-3 sm:px-4 font-bold text-[11px] sm:text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap';
-          sec.classList.add('hidden');
+        if (btn && sec) {
+          if (t === tab) {
+            btn.className = 'py-3 px-4 font-bold text-xs sm:text-sm border-b-2 border-emerald-500 text-emerald-400 flex items-center space-x-2 whitespace-nowrap';
+            sec.classList.remove('hidden');
+          } else {
+            btn.className = 'py-3 px-4 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap';
+            sec.classList.add('hidden');
+          }
         }
       });
     }
 
-    window.openRenewModal = openRenewModal;
-    window.closeRenewModal = closeRenewModal;
-    window.switchDashboardTab = switchDashboardTab;
-    window.handlePlanPayment = handlePlanPayment;
-    window.loadDashboardMetrics = loadDashboardMetrics;
+    function switchTab(tab) {
+      if (typeof switchDashboardTab === 'function') {
+        switchDashboardTab(tab);
+      }
+    }
+    window.switchTab = switchTab;
 
     loadDashboardMetrics();
   </script>

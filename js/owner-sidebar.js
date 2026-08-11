@@ -85,6 +85,25 @@ const OwnerSidebar = {
           </div>
         </div>
       </aside>
+
+      <!-- Mobile Quick Bottom Navigation Bar (Shown on small screens) -->
+      <nav id="mobile-bottom-nav" class="fixed bottom-0 left-0 right-0 z-40 bg-gray-950/95 backdrop-blur-xl border-t border-gray-800 flex items-center justify-around py-1.5 px-0.5 lg:hidden max-w-full overflow-hidden">
+        ${[
+          { key: 'dashboard', label: 'Dash', icon: '📊', url: 'owner-dashboard.html' },
+          { key: 'members', label: 'Members', icon: '👥', url: 'owner-members.html' },
+          { key: 'payments', label: 'Payments', icon: '💳', url: 'owner-payments.html' },
+          { key: 'expenses', label: 'Expenses', icon: '💰', url: 'owner-expenses.html' },
+          { key: 'store', label: 'Store', icon: '🛒', url: 'owner-store.html' }
+        ].map(b => {
+          const isAct = b.key === activeKey;
+          return `
+            <a href="${b.url}" data-key="${b.key}" onclick="OwnerSidebar.handleNavClick(event, '${b.url}')" class="mobile-bottom-nav-item flex flex-col items-center justify-center px-1.5 py-1 rounded-xl transition-all text-[10px] font-bold min-w-0 shrink-0 ${isAct ? 'text-emerald-400 bg-emerald-500/10' : 'text-gray-400 hover:text-white'}">
+              <span class="text-base leading-none">${b.icon}</span>
+              <span class="mt-0.5 truncate">${b.label}</span>
+            </a>
+          `;
+        }).join('')}
+      </nav>
     `;
 
     // Inject sidebar into element with id 'sidebar-container'
@@ -99,12 +118,12 @@ const OwnerSidebar = {
       const sidebar = document.getElementById('owner-sidebar');
 
       const openMenu = () => {
-        sidebar.classList.remove('-translate-x-full');
+        if (sidebar) sidebar.classList.remove('-translate-x-full');
         if (backdrop) backdrop.classList.remove('hidden');
       };
 
       const closeMenu = () => {
-        sidebar.classList.add('-translate-x-full');
+        if (sidebar) sidebar.classList.add('-translate-x-full');
         if (backdrop) backdrop.classList.add('hidden');
       };
 
@@ -138,13 +157,13 @@ const OwnerSidebar = {
       }
     });
 
-    const mobileBottomNavLinks = document.querySelectorAll('#mobile-bottom-nav a');
-    mobileBottomNavLinks.forEach(link => {
-      const href = link.getAttribute('href') || '';
-      if (href.includes(activeKey)) {
-        link.classList.add('active');
+    const btmLinks = document.querySelectorAll('#mobile-bottom-nav a.mobile-bottom-nav-item');
+    btmLinks.forEach(link => {
+      const key = link.getAttribute('data-key');
+      if (key === activeKey) {
+        link.className = 'mobile-bottom-nav-item flex flex-col items-center justify-center px-2 py-1 rounded-xl transition-all text-[10px] font-bold text-emerald-400 bg-emerald-500/10';
       } else {
-        link.classList.remove('active');
+        link.className = 'mobile-bottom-nav-item flex flex-col items-center justify-center px-2 py-1 rounded-xl transition-all text-[10px] font-bold text-gray-400 hover:text-white';
       }
     });
   }

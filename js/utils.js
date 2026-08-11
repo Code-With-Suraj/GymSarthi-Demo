@@ -33,6 +33,21 @@ const Utils = {
     }
   },
 
+  // Safe DOM access helpers to prevent unhandled TypeError when setting text/html on null elements
+  setElementText(idOrEl, text) {
+    try {
+      const el = typeof idOrEl === 'string' ? document.getElementById(idOrEl) : idOrEl;
+      if (el) el.textContent = text !== undefined && text !== null ? text : '';
+    } catch (e) {}
+  },
+
+  setElementHtml(idOrEl, html) {
+    try {
+      const el = typeof idOrEl === 'string' ? document.getElementById(idOrEl) : idOrEl;
+      if (el) el.innerHTML = html !== undefined && html !== null ? html : '';
+    } catch (e) {}
+  },
+
   // Toast Notification System
   showToast(message, type = 'info', duration = 3500) {
     let container = document.getElementById('toast-container');

@@ -14,7 +14,7 @@ const CONFIG = {
   // Google Apps Script REST API Web App Endpoint
   // Users can override via local storage setting if needed
   API_BASE_URL: (typeof localStorage !== 'undefined' && localStorage.getItem('gym_api_url')) ||
-    'https://script.google.com/macros/s/AKfycbxeU_Wm_3EJ20WlRijO_WNtSzzSv6nDgIXne82JHFCWcVcBOC_fqGjSVuEAGUWVGrwH2Q/exec',
+    'https://script.google.com/macros/s/AKfycbzLEj61bQGGXXpB_z3cgAQ3mrNd2ggxwO-KYTx3WQomJ9OkKRuJKjh_HB722WaelMUKsg/exec',
 
   // 1. GYM OWNER'S RAZORPAY GATEWAY (For Member Onboarding & Store Purchases)
   GYM_RAZORPAY_KEY_ID: (typeof localStorage !== 'undefined' && localStorage.getItem('gym_razorpay_key_id')) || 'rzp_live_gym_key_placeholder',

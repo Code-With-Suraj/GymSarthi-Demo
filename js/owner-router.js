@@ -94,42 +94,46 @@ const OwnerRouter = {
           currentMain.className = newMain.className;
           currentMain.style.opacity = '1';
 
-          // Clean up old modals and append new modals
-          document.querySelectorAll('.spa-dynamic-modal').forEach(el => el.remove());
+          // Clean up old modals from previous view (excluding sidebar backdrop)
+          document.querySelectorAll('body > .fixed.inset-0:not(#mobile-sidebar-backdrop), body > [id$="-modal"], body > [id*="modal"], .spa-dynamic-modal').forEach(el => {
+            if (el.id !== 'mobile-sidebar-backdrop' && !el.closest('main') && !el.closest('aside') && !el.closest('header')) {
+              el.remove();
+            }
+          });
+
+          // Append new view modals
           newModals.forEach(modal => {
             const modalClone = modal.cloneNode(true);
             modalClone.classList.add('spa-dynamic-modal');
             document.body.appendChild(modalClone);
           });
 
-          // Update header title and subtitle
-          const newHeaderTitle = doc.querySelector('header h1');
-          const newHeaderSub = doc.querySelector('header p');
-          const currentHeaderTitle = document.querySelector('header h1');
-          const currentHeaderSub = document.querySelector('header p');
-
-          if (newHeaderTitle && currentHeaderTitle) currentHeaderTitle.textContent = newHeaderTitle.textContent;
-          if (newHeaderSub && currentHeaderSub) currentHeaderSub.textContent = newHeaderSub.textContent;
-
-          // Replace header right-side action elements cleanly
+          // Update header content (Title, Subtitle, and Right-side Action Buttons / Widgets)
           const currentHeader = document.querySelector('header');
           const newHeader = doc.querySelector('header');
 
           if (currentHeader && newHeader) {
-            // Find action container or buttons in current header (excluding mobile toggle and header title wrapper)
-            const currentActions = currentHeader.querySelector('.header-actions');
-            const newActions = newHeader.querySelector('.header-actions');
+            const currentTitleBlock = currentHeader.children[0];
+            const newTitleBlock = newHeader.children[0];
 
-            if (currentActions && newActions) {
-              currentActions.innerHTML = newActions.innerHTML;
-            } else if (currentActions) {
-              currentActions.innerHTML = '';
-            } else {
-              // Fallback for buttons directly in header
-              const oldBtns = currentHeader.querySelectorAll('button:not(#mobile-menu-toggle), a:not(#mobile-menu-toggle)');
-              oldBtns.forEach(btn => btn.remove());
-              const newBtns = newHeader.querySelectorAll('button:not(#mobile-menu-toggle), a:not(#mobile-menu-toggle)');
-              newBtns.forEach(btn => currentHeader.appendChild(btn.cloneNode(true)));
+            if (currentTitleBlock && newTitleBlock) {
+              const currentH1 = currentTitleBlock.querySelector('h1');
+              const currentP = currentTitleBlock.querySelector('p');
+              const newH1 = newTitleBlock.querySelector('h1');
+              const newP = newTitleBlock.querySelector('p');
+
+              if (currentH1 && newH1) currentH1.textContent = newH1.textContent;
+              if (currentP && newP) currentP.textContent = newP.textContent;
+            }
+
+            // Remove all existing right-side header elements (everything after title block)
+            while (currentHeader.children.length > 1) {
+              currentHeader.removeChild(currentHeader.lastChild);
+            }
+
+            // Append all new right-side header elements from target document
+            for (let i = 1; i < newHeader.children.length; i++) {
+              currentHeader.appendChild(newHeader.children[i].cloneNode(true));
             }
           }
 
@@ -176,13 +180,27 @@ const OwnerRouter = {
           document.body.appendChild(newScript);
         }
       } else {
-        // Inline page script execution in global window scope
+        // Inline page script execution
         const inlineCode = script.textContent;
-        if (inlineCode && !inlineCode.includes('Auth.requireAuth')) {
+        if (inlineCode && inlineCode.trim()) {
           try {
-            const scriptTag = document.createElement('script');
-            scriptTag.textContent = inlineCode;
-            document.body.appendChild(scriptTag);
+            // Find all top-level functions defined in the inline code
+            const funcNames = [];
+            const fnRegex = /(?:async\s+)?function\s+([a-zA-Z0-9_$]+)\s*\(/g;
+            let match;
+            while ((match = fnRegex.exec(inlineCode)) !== null) {
+              funcNames.push(match[1]);
+            }
+
+            // Expose function declarations to global window inside IIFE to avoid let/const re-declaration syntax errors
+            const assignments = funcNames.map(name => `try { if (typeof ${name} !== 'undefined') window.${name} = ${name}; } catch(e){}`).join('\n');
+            const wrappedCode = `
+              (function() {
+                ${inlineCode}
+                ${assignments}
+              })();
+            `;
+            (0, eval)(wrappedCode);
           } catch (e) {
             console.warn('Inline script execution warning:', e);
           }

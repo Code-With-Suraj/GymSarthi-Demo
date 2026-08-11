@@ -138,8 +138,8 @@
     Auth.requireAuth('MEMBER');
 
     const user = Auth.getUser();
-    document.getElementById('user-display-name').textContent = user.name || 'Member';
-    document.getElementById('welcome-title').textContent = `Hello, ${user.name || 'Athlete'}! 👋`;
+    Utils.setElementText('user-display-name', user.name || 'Member');
+    Utils.setElementText('welcome-title', `Hello, ${user.name || 'Athlete'}! 👋`);
 
     async function loadDashboard() {
       try {
@@ -147,8 +147,8 @@
         const memberData = profile || user;
         window.currentMemberProfile = memberData;
 
-        document.getElementById('pkg-name').textContent = memberData.package_name || 'Standard Membership';
-        document.getElementById('pkg-expiry').textContent = memberData.expiry_date ? `Valid until ${Utils.formatDate(memberData.expiry_date)}` : 'Active';
+        Utils.setElementText('pkg-name', memberData.package_name || 'Standard Membership');
+        Utils.setElementText('pkg-expiry', memberData.expiry_date ? `Valid until ${Utils.formatDate(memberData.expiry_date)}` : 'Active');
 
         // Check subscription for Gym Store gating
         try {
@@ -184,26 +184,30 @@
 
       const safeLogs = Array.isArray(logs) ? logs : [];
 
+      if (!tbody) return;
+
       if (safeLogs.length === 0) {
         tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-gray-500">No attendance scans recorded yet. Use the Scan Gate QR button above when entering the gym!</td></tr>`;
-        streakEl.textContent = '0 Days';
-        todayStatus.textContent = 'Status: Not punched today yet.';
+        if (streakEl) streakEl.textContent = '0 Days';
+        if (todayStatus) todayStatus.textContent = 'Status: Not punched today yet.';
         return;
       }
 
-      streakEl.textContent = `${safeLogs.length} Days`;
+      if (streakEl) streakEl.textContent = `${safeLogs.length} Days`;
 
       const todayStr = new Date().toISOString().split('T')[0];
       const todayLog = safeLogs.find(l => l.date === todayStr);
 
-      if (todayLog) {
-        if (todayLog.out_time) {
-          todayStatus.innerHTML = `<span class="text-cyan-400 font-bold">Checked Out at ${todayLog.out_time}</span>`;
-        } else if (todayLog.in_time) {
-          todayStatus.innerHTML = `<span class="text-emerald-400 font-bold">Currently Checked IN since ${todayLog.in_time}</span>`;
+      if (todayStatus) {
+        if (todayLog) {
+          if (todayLog.out_time) {
+            todayStatus.innerHTML = `<span class="text-cyan-400 font-bold">Checked Out at ${todayLog.out_time}</span>`;
+          } else if (todayLog.in_time) {
+            todayStatus.innerHTML = `<span class="text-emerald-400 font-bold">Currently Checked IN since ${todayLog.in_time}</span>`;
+          }
+        } else {
+          todayStatus.textContent = 'Status: Not checked in today yet.';
         }
-      } else {
-        todayStatus.textContent = 'Status: Not checked in today yet.';
       }
 
       tbody.innerHTML = safeLogs.slice(0, 10).map(log => `

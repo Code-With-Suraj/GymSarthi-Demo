@@ -21,42 +21,40 @@
     <div id="sidebar-container"></div>
 
     <!-- Main Content Area -->
-    <div class="flex-1 lg:pl-64 flex flex-col min-h-screen">
+    <div class="flex-1 lg:pl-64 flex flex-col min-h-screen min-w-0 max-w-full overflow-x-hidden">
       <!-- Header -->
-      <header class="h-14 sm:h-20 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800 flex items-center justify-between px-3 sm:px-6 sticky top-0 z-30">
-        <div class="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
-          <button id="mobile-menu-toggle" class="lg:hidden p-2 text-gray-400 hover:text-white rounded-lg flex-shrink-0">
+      <header class="h-16 sm:h-20 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800 flex items-center justify-between px-2 sm:px-6 sticky top-0 z-30 min-w-0 max-w-full overflow-hidden">
+        <div class="flex items-center space-x-1.5 sm:space-x-4 overflow-hidden min-w-0 flex-1">
+          <button id="mobile-menu-toggle" class="lg:hidden p-1.5 text-gray-400 hover:text-white rounded-lg focus:outline-none shrink-0">
             ☰
           </button>
-          <div class="min-w-0">
-            <h1 class="text-sm sm:text-xl font-bold text-white truncate">Members & Retention Hub</h1>
-            <p class="text-[10px] sm:text-xs text-gray-400 truncate hidden sm:block">Inactive Alerts & Member Directory</p>
+          <div class="truncate min-w-0">
+            <h1 class="text-xs sm:text-xl font-bold text-white truncate">Members & Retention Hub</h1>
+            <p class="text-[10px] sm:text-xs text-gray-400 truncate hidden sm:block">Feature 2: 3+ Day Inactive Alerts & Member Directory</p>
           </div>
         </div>
 
-        <div class="header-actions flex items-center space-x-1.5 sm:space-x-3 flex-shrink-0">
-          <button onclick="openAddMemberModal()" class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-gray-950 font-bold text-[11px] sm:text-xs shadow hover:scale-[1.02] transition-all">
-            + Add Member
-          </button>
-        </div>
+        <button onclick="openAddMemberModal()" class="px-2.5 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-gray-950 font-bold text-xs shadow hover:scale-[1.02] transition-all shrink-0 ml-1 sm:ml-2">
+          + Add Member
+        </button>
       </header>
 
       <!-- Main Body -->
-      <main class="p-3 sm:p-6 space-y-4 sm:space-y-6 flex-1">
+      <main class="p-3 sm:p-6 space-y-4 sm:space-y-6 flex-1 pb-24 lg:pb-6">
 
         <!-- Tabs Header -->
-        <div class="mobile-scroll-tabs border-b border-gray-800 pb-0">
-          <button id="tab-btn-expiring" onclick="switchTab('expiring')" class="py-2.5 sm:py-3 px-3 sm:px-4 font-bold text-[11px] sm:text-sm border-b-2 border-amber-500 text-amber-400 flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
-            <span>⏳ Expiring Soon</span>
-            <span id="expiring-count-badge" class="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30">0</span>
+        <div class="flex border-b border-gray-800 space-x-2 sm:space-x-4 overflow-x-auto">
+          <button id="tab-btn-expiring" onclick="switchTab('expiring')" class="py-3 px-4 font-bold text-sm border-b-2 border-amber-500 text-amber-400 flex items-center space-x-2 whitespace-nowrap">
+            <span>⏳ Expiring Soon (3 Days)</span>
+            <span id="expiring-count-badge" class="px-2 py-0.5 rounded-full text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30">0</span>
           </button>
-          <button id="tab-btn-inactive" onclick="switchTab('inactive')" class="py-2.5 sm:py-3 px-3 sm:px-4 font-bold text-[11px] sm:text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
-            <span>🚨 Inactive Alerts</span>
-            <span id="inactive-count-badge" class="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-xs bg-rose-500/20 text-rose-400 border border-rose-500/30">0</span>
+          <button id="tab-btn-inactive" onclick="switchTab('inactive')" class="py-3 px-4 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap">
+            <span>🚨 Inactive Alerts (3+ Days)</span>
+            <span id="inactive-count-badge" class="px-2 py-0.5 rounded-full text-xs bg-rose-500/20 text-rose-400 border border-rose-500/30">0</span>
           </button>
-          <button id="tab-btn-all" onclick="switchTab('all')" class="py-2.5 sm:py-3 px-3 sm:px-4 font-bold text-[11px] sm:text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
-            <span>👥 All Members</span>
-            <span id="all-count-badge" class="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-xs bg-gray-800 text-gray-300">0</span>
+          <button id="tab-btn-all" onclick="switchTab('all')" class="py-3 px-4 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap">
+            <span>👥 All Gym Members</span>
+            <span id="all-count-badge" class="px-2 py-0.5 rounded-full text-xs bg-gray-800 text-gray-300">0</span>
           </button>
         </div>
 
@@ -82,7 +80,13 @@
           </div>
 
           <div class="glass-card rounded-3xl border-gray-800 overflow-hidden">
-            <div class="overflow-x-auto">
+            <!-- Mobile Cards View -->
+            <div id="expiring-cards-mobile" class="block sm:hidden space-y-3 p-3">
+              <div class="py-6 text-center text-gray-500 text-xs">Scanning for memberships expiring soon...</div>
+            </div>
+
+            <!-- Desktop Table View -->
+            <div class="hidden sm:block overflow-x-auto">
               <table class="w-full text-left text-xs">
                 <thead class="bg-gray-900/90 text-gray-400 uppercase font-semibold border-b border-gray-800">
                   <tr>
@@ -115,7 +119,13 @@
           </div>
 
           <div class="glass-card rounded-3xl border-gray-800 overflow-hidden">
-            <div class="overflow-x-auto">
+            <!-- Mobile Cards View -->
+            <div id="inactive-cards-mobile" class="block sm:hidden space-y-3 p-3">
+              <div class="py-6 text-center text-gray-500 text-xs">Scanning for inactive members...</div>
+            </div>
+
+            <!-- Desktop Table View -->
+            <div class="hidden sm:block overflow-x-auto">
               <table class="w-full text-left text-xs">
                 <thead class="bg-gray-900/90 text-gray-400 uppercase font-semibold border-b border-gray-800">
                   <tr>
@@ -137,7 +147,13 @@
         <!-- TAB 2: ALL MEMBERS LIST -->
         <div id="section-all" class="space-y-4 hidden">
           <div class="glass-card rounded-3xl border-gray-800 overflow-hidden">
-            <div class="overflow-x-auto">
+            <!-- Mobile Cards View -->
+            <div id="all-cards-mobile" class="block sm:hidden space-y-3 p-3">
+              <div class="py-6 text-center text-gray-500 text-xs">Loading gym members...</div>
+            </div>
+
+            <!-- Desktop Table View -->
+            <div class="hidden sm:block overflow-x-auto">
               <table class="w-full text-left text-xs">
                 <thead class="bg-gray-900/90 text-gray-400 uppercase font-semibold border-b border-gray-800">
                   <tr>
@@ -256,6 +272,7 @@
         allSec.classList.remove('hidden');
       }
     }
+    window.switchTab = switchTab;
 
     async function loadMembersData() {
       try {
@@ -293,133 +310,247 @@
 
     function renderExpiringTable(list) {
       const tbody = document.getElementById('expiring-table-body');
-      if (!tbody) return;
+      const mobileContainer = document.getElementById('expiring-cards-mobile');
       const safeList = Array.isArray(list) ? list : [];
+
       if (safeList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-emerald-400 font-semibold">🎉 No memberships expiring in the next 3 days! All plans healthy.</td></tr>`;
+        const emptyMsg = `🎉 No memberships expiring in the next 3 days! All plans healthy.`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-emerald-400 font-semibold">${emptyMsg}</td></tr>`;
+        if (mobileContainer) mobileContainer.innerHTML = `<div class="py-6 text-center text-emerald-400 font-semibold text-xs">${emptyMsg}</div>`;
         return;
       }
 
-      tbody.innerHTML = safeList.map(m => {
-        let badgeColor = 'bg-amber-500/20 text-amber-400 border-amber-500/30';
-        if (m.urgencyLevel === 'HIGH') {
-          badgeColor = 'bg-orange-500/20 text-orange-400 border-orange-500/30';
-        } else if (m.urgencyLevel === 'CRITICAL') {
-          badgeColor = 'bg-rose-500/20 text-rose-400 border-rose-500/30';
-        }
+      if (tbody) {
+        tbody.innerHTML = safeList.map(m => {
+          let badgeColor = 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+          if (m.urgencyLevel === 'HIGH') badgeColor = 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+          else if (m.urgencyLevel === 'CRITICAL') badgeColor = 'bg-rose-500/20 text-rose-400 border-rose-500/30';
 
-        return `
-          <tr class="hover:bg-gray-900/40">
-            <td class="py-3.5 px-4 font-bold text-white flex items-center space-x-3">
-              <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold text-xs">
-                ${(m.name || 'M').charAt(0)}
+          return `
+            <tr class="hover:bg-gray-900/40">
+              <td class="py-3.5 px-4 font-bold text-white flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold text-xs">
+                  ${(m.name || 'M').charAt(0)}
+                </div>
+                <span>${m.name || 'Member'}</span>
+              </td>
+              <td class="py-3.5 px-4 font-semibold text-gray-300">+91 ${m.mobile || ''}</td>
+              <td class="py-3.5 px-4 font-medium text-emerald-400">${m.packageName || 'Membership'}</td>
+              <td class="py-3.5 px-4 text-gray-400 text-xs">${Utils.formatDate(m.expiryDate)}</td>
+              <td class="py-3.5 px-4">
+                <span class="px-2.5 py-1 rounded-full text-xs font-black border ${badgeColor}">
+                  ${m.urgencyText || 'Expires Soon'}
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-center space-x-2">
+                <a href="${m.callLink || '#'}" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-white font-bold text-xs inline-flex items-center space-x-1 shadow border border-gray-700">
+                  <span>Call</span>
+                  <span>📞</span>
+                </a>
+                <a href="${m.whatsappLink || '#'}" target="_blank" class="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-black text-xs inline-flex items-center space-x-1 shadow transition-all transform hover:scale-105">
+                  <span>Send Renewal Link</span>
+                  <span>💬</span>
+                </a>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      if (mobileContainer) {
+        mobileContainer.innerHTML = safeList.map(m => {
+          let badgeColor = 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+          if (m.urgencyLevel === 'HIGH') badgeColor = 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+          else if (m.urgencyLevel === 'CRITICAL') badgeColor = 'bg-rose-500/20 text-rose-400 border-rose-500/30';
+
+          return `
+            <div class="glass-card p-3.5 rounded-2xl border-gray-800 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold text-xs">
+                    ${(m.name || 'M').charAt(0)}
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-white text-sm">${m.name || 'Member'}</h4>
+                    <p class="text-[11px] text-gray-400">+91 ${m.mobile || ''}</p>
+                  </div>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-[10px] font-black border ${badgeColor}">
+                  ${m.urgencyText || 'Expires Soon'}
+                </span>
               </div>
-              <span>${m.name || 'Member'}</span>
-            </td>
-            <td class="py-3.5 px-4 font-semibold text-gray-300">+91 ${m.mobile || ''}</td>
-            <td class="py-3.5 px-4 font-medium text-emerald-400">${m.packageName || 'Membership'}</td>
-            <td class="py-3.5 px-4 text-gray-400 text-xs">${Utils.formatDate(m.expiryDate)}</td>
-            <td class="py-3.5 px-4">
-              <span class="px-2.5 py-1 rounded-full text-xs font-black border ${badgeColor}">
-                ${m.urgencyText || 'Expires Soon'}
-              </span>
-            </td>
-            <td class="py-3.5 px-4 text-center space-x-2">
-              <a href="${m.callLink || '#'}" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-white font-bold text-xs inline-flex items-center space-x-1 shadow border border-gray-700">
-                <span>Call</span>
-                <span>📞</span>
-              </a>
-              <a href="${m.whatsappLink || '#'}" target="_blank" class="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-black text-xs inline-flex items-center space-x-1 shadow transition-all transform hover:scale-105">
-                <span>Send Renewal Link</span>
-                <span>💬</span>
-              </a>
-            </td>
-          </tr>
-        `;
-      }).join('');
+              <div class="flex items-center justify-between text-xs pt-1">
+                <span class="text-emerald-400 font-semibold">${m.packageName || 'Membership'}</span>
+                <span class="text-gray-400">Exp: ${Utils.formatDate(m.expiryDate)}</span>
+              </div>
+              <div class="flex items-center space-x-2 pt-2 border-t border-gray-800/60">
+                <a href="${m.callLink || '#'}" class="flex-1 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-bold text-xs flex items-center justify-center space-x-1 border border-gray-700">
+                  <span>Call</span> <span>📞</span>
+                </a>
+                <a href="${m.whatsappLink || '#'}" target="_blank" class="flex-1 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-black text-xs flex items-center justify-center space-x-1 shadow">
+                  <span>Send Renewal</span> <span>💬</span>
+                </a>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
     }
 
     function renderInactiveTable(list) {
       const tbody = document.getElementById('inactive-table-body');
-      if (!tbody) return;
+      const mobileContainer = document.getElementById('inactive-cards-mobile');
       const safeList = Array.isArray(list) ? list : [];
+
       if (safeList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-emerald-400 font-semibold">🎉 All members are active! No 3+ day absent alerts today.</td></tr>`;
+        const emptyMsg = `🎉 All members are active! No 3+ day absent alerts today.`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-emerald-400 font-semibold">${emptyMsg}</td></tr>`;
+        if (mobileContainer) mobileContainer.innerHTML = `<div class="py-6 text-center text-emerald-400 font-semibold text-xs">${emptyMsg}</div>`;
         return;
       }
 
-      tbody.innerHTML = safeList.map(m => {
-        const whatsappMsg = encodeURIComponent(`Hi ${m.name || 'Member'}, we noticed you haven't visited ${CONFIG.GYM_NAME} for the last ${m.days_absent || 3} days! Consistency is key for your fitness goals. See you today! 💪`);
+      if (tbody) {
+        tbody.innerHTML = safeList.map(m => {
+          const whatsappMsg = encodeURIComponent(`Hi ${m.name || 'Member'}, we noticed you haven't visited ${CONFIG.GYM_NAME} for the last ${m.days_absent || 3} days! Consistency is key for your fitness goals. See you today! 💪`);
 
-        return `
-          <tr class="hover:bg-gray-900/40">
-            <td class="py-3.5 px-4 font-bold text-white flex items-center space-x-3">
-              <div class="w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center font-bold text-xs">
-                ${(m.name || 'M').charAt(0)}
+          return `
+            <tr class="hover:bg-gray-900/40">
+              <td class="py-3.5 px-4 font-bold text-white flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center font-bold text-xs">
+                  ${(m.name || 'M').charAt(0)}
+                </div>
+                <span>${m.name || 'Member'}</span>
+              </td>
+              <td class="py-3.5 px-4 font-semibold text-gray-300">+91 ${m.mobile || ''}</td>
+              <td class="py-3.5 px-4">
+                <span class="px-2.5 py-1 rounded-full text-xs font-black bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                  ⚠️ ${m.days_absent || 3} Days Absent
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-gray-400 text-xs">${Utils.formatDate(m.last_attendance_date)}</td>
+              <td class="py-3.5 px-4 text-center space-x-2">
+                <a href="tel:+91${m.mobile || ''}" class="px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs inline-flex items-center space-x-1 shadow">
+                  <span>Call Now</span>
+                  <span>📞</span>
+                </a>
+                <a href="https://wa.me/91${m.mobile || ''}?text=${whatsappMsg}" target="_blank" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center space-x-1 shadow">
+                  <span>WhatsApp</span>
+                  <span>💬</span>
+                </a>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      if (mobileContainer) {
+        mobileContainer.innerHTML = safeList.map(m => {
+          const whatsappMsg = encodeURIComponent(`Hi ${m.name || 'Member'}, we noticed you haven't visited ${CONFIG.GYM_NAME} for the last ${m.days_absent || 3} days! Consistency is key for your fitness goals. See you today! 💪`);
+
+          return `
+            <div class="glass-card p-3.5 rounded-2xl border-gray-800 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center font-bold text-xs">
+                    ${(m.name || 'M').charAt(0)}
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-white text-sm">${m.name || 'Member'}</h4>
+                    <p class="text-[11px] text-gray-400">+91 ${m.mobile || ''}</p>
+                  </div>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                  ⚠️ ${m.days_absent || 3} Days Absent
+                </span>
               </div>
-              <span>${m.name || 'Member'}</span>
-            </td>
-            <td class="py-3.5 px-4 font-semibold text-gray-300">+91 ${m.mobile || ''}</td>
-            <td class="py-3.5 px-4">
-              <span class="px-2.5 py-1 rounded-full text-xs font-black bg-rose-500/20 text-rose-400 border border-rose-500/30">
-                ⚠️ ${m.days_absent || 3} Days Absent
-              </span>
-            </td>
-            <td class="py-3.5 px-4 text-gray-400 text-xs">${Utils.formatDate(m.last_attendance_date)}</td>
-            <td class="py-3.5 px-4 text-center space-x-2">
-              <!-- Feature 2: 1-Click Phone Call -->
-              <a href="tel:+91${m.mobile || ''}" class="px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs inline-flex items-center space-x-1 shadow">
-                <span>Call Now</span>
-                <span>📞</span>
-              </a>
-
-              <!-- 1-Click WhatsApp Followup -->
-              <a href="https://wa.me/91${m.mobile || ''}?text=${whatsappMsg}" target="_blank" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center space-x-1 shadow">
-                <span>WhatsApp</span>
-                <span>💬</span>
-              </a>
-            </td>
-          </tr>
-        `;
-      }).join('');
+              <div class="text-xs text-gray-400">
+                Last Attendance: ${Utils.formatDate(m.last_attendance_date)}
+              </div>
+              <div class="flex items-center space-x-2 pt-2 border-t border-gray-800/60">
+                <a href="tel:+91${m.mobile || ''}" class="flex-1 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs flex items-center justify-center space-x-1 shadow">
+                  <span>Call Now</span> <span>📞</span>
+                </a>
+                <a href="https://wa.me/91${m.mobile || ''}?text=${whatsappMsg}" target="_blank" class="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center space-x-1 shadow">
+                  <span>WhatsApp</span> <span>💬</span>
+                </a>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
     }
 
     function renderAllMembersTable(list) {
       const tbody = document.getElementById('all-table-body');
-      if (!tbody) return;
+      const mobileContainer = document.getElementById('all-cards-mobile');
       const safeList = Array.isArray(list) ? list : [];
+
       if (safeList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-gray-500">No members found.</td></tr>`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-gray-500">No members found.</td></tr>`;
+        if (mobileContainer) mobileContainer.innerHTML = `<div class="py-6 text-center text-gray-500 text-xs">No members found.</div>`;
         return;
       }
 
-      tbody.innerHTML = safeList.map(m => {
-        const isPending = m.payment_status === 'PENDING_CASH' || m.payment_status === 'PENDING' || m.payment_status === 'UNPAID';
-        return `
-          <tr class="hover:bg-gray-900/40">
-            <td class="py-3 px-4 font-mono text-[11px] text-gray-400">${m.member_id || ''}</td>
-            <td class="py-3 px-4 font-bold text-white">
-              <div>${m.name || 'Member'}</div>
-              <div class="text-[11px] font-medium text-gray-500">+91 ${m.mobile || ''}</div>
-            </td>
-            <td class="py-3 px-4 text-emerald-400 font-semibold">${m.package_name || 'Standard'}</td>
-            <td class="py-3 px-4 text-gray-400 text-xs">${Utils.formatDate(m.expiry_date)}</td>
-            <td class="py-3 px-4">
-              <div class="flex items-center space-x-2">
+      if (tbody) {
+        tbody.innerHTML = safeList.map(m => {
+          const isPending = m.payment_status === 'PENDING_CASH' || m.payment_status === 'PENDING' || m.payment_status === 'UNPAID';
+          return `
+            <tr class="hover:bg-gray-900/40">
+              <td class="py-3 px-4 font-mono text-[11px] text-gray-400">${m.member_id || ''}</td>
+              <td class="py-3 px-4 font-bold text-white">
+                <div>${m.name || 'Member'}</div>
+                <div class="text-[11px] font-medium text-gray-500">+91 ${m.mobile || ''}</div>
+              </td>
+              <td class="py-3 px-4 text-emerald-400 font-semibold">${m.package_name || 'Standard'}</td>
+              <td class="py-3 px-4 text-gray-400 text-xs">${Utils.formatDate(m.expiry_date)}</td>
+              <td class="py-3 px-4">
+                <div class="flex items-center space-x-2">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isPending ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}">
+                    ${m.payment_status || 'PAID'}
+                  </span>
+                  ${isPending ? `
+                    <button onclick="markMemberPaid('${m.member_id}', '${(m.name || 'Member').replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-black text-[11px] transition-all shadow">
+                      💵 Mark Paid
+                    </button>
+                  ` : ''}
+                </div>
+              </td>
+              <td class="py-3 px-4 text-right text-gray-500 text-xs">${Utils.formatDate(m.created_at)}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      if (mobileContainer) {
+        mobileContainer.innerHTML = safeList.map(m => {
+          const isPending = m.payment_status === 'PENDING_CASH' || m.payment_status === 'PENDING' || m.payment_status === 'UNPAID';
+          return `
+            <div class="glass-card p-3.5 rounded-2xl border-gray-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="font-bold text-white text-sm">${m.name || 'Member'}</h4>
+                  <p class="text-[11px] text-gray-400">+91 ${m.mobile || ''}</p>
+                </div>
+                <span class="font-mono text-[10px] text-gray-500">${m.member_id || ''}</span>
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-emerald-400 font-semibold">${m.package_name || 'Standard'}</span>
+                <span class="text-gray-400">Exp: ${Utils.formatDate(m.expiry_date)}</span>
+              </div>
+              <div class="flex items-center justify-between pt-2 border-t border-gray-800/60">
                 <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isPending ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}">
                   ${m.payment_status || 'PAID'}
                 </span>
                 ${isPending ? `
-                  <button onclick="markMemberPaid('${m.member_id}', '${(m.name || 'Member').replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-black text-[11px] transition-all shadow">
+                  <button onclick="markMemberPaid('${m.member_id}', '${(m.name || 'Member').replace(/'/g, "\\'")}')" class="px-3 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-black text-xs transition-all shadow">
                     💵 Mark Paid
                   </button>
-                ` : ''}
+                ` : `<span class="text-[11px] text-gray-500">Joined: ${Utils.formatDate(m.created_at)}</span>`}
               </div>
-            </td>
-            <td class="py-3 px-4 text-right text-gray-500 text-xs">${Utils.formatDate(m.created_at)}</td>
-          </tr>
-        `;
-      }).join('');
+            </div>
+          `;
+        }).join('');
+      }
     }
 
     async function markMemberPaid(memberId, name) {
@@ -482,35 +613,7 @@
       }
     });
 
-    window.openAddMemberModal = openAddMemberModal;
-    window.closeAddMemberModal = closeAddMemberModal;
-    window.switchTab = switchTab;
-
     loadMembersData();
   </script>
-
-  <!-- Mobile Bottom Navigation Bar -->
-  <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
-    <a href="owner-dashboard.html" onclick="OwnerSidebar.handleNavClick(event, 'owner-dashboard.html')">
-      <span class="nav-icon">📊</span>
-      <span>Dashboard</span>
-    </a>
-    <a href="owner-members.html" class="active" onclick="OwnerSidebar.handleNavClick(event, 'owner-members.html')">
-      <span class="nav-icon">👥</span>
-      <span>Members</span>
-    </a>
-    <a href="owner-payments.html" onclick="OwnerSidebar.handleNavClick(event, 'owner-payments.html')">
-      <span class="nav-icon">💳</span>
-      <span>Payments</span>
-    </a>
-    <a href="owner-expenses.html" onclick="OwnerSidebar.handleNavClick(event, 'owner-expenses.html')">
-      <span class="nav-icon">💰</span>
-      <span>Expenses</span>
-    </a>
-    <a href="owner-subscription.html" onclick="OwnerSidebar.handleNavClick(event, 'owner-subscription.html')">
-      <span class="nav-icon">⚡</span>
-      <span>Plan</span>
-    </a>
-  </nav>
 </body>
 </html>

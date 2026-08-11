@@ -2,7 +2,7 @@
  * GymSarthi — Service Worker for Mobile PWA
  */
 
-const CACHE_NAME = 'gymsarthi-pwa-v4';
+const CACHE_NAME = 'gymsarthi-pwa-v5';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
