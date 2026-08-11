@@ -23,38 +23,40 @@
     <!-- Main Content Area -->
     <div class="flex-1 lg:pl-64 flex flex-col min-h-screen">
       <!-- Header -->
-      <header class="h-20 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800 flex items-center justify-between px-6 sticky top-0 z-30">
-        <div class="flex items-center space-x-4">
-          <button id="mobile-menu-toggle" class="lg:hidden p-2 text-gray-400 hover:text-white rounded-lg">
+      <header class="h-14 sm:h-20 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800 flex items-center justify-between px-3 sm:px-6 sticky top-0 z-30">
+        <div class="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
+          <button id="mobile-menu-toggle" class="lg:hidden p-2 text-gray-400 hover:text-white rounded-lg flex-shrink-0">
             ☰
           </button>
-          <div>
-            <h1 class="text-xl font-bold text-white">Members & Retention Hub</h1>
-            <p class="text-xs text-gray-400">Feature 2: 3+ Day Inactive Alerts & Member Directory</p>
+          <div class="min-w-0">
+            <h1 class="text-sm sm:text-xl font-bold text-white truncate">Members & Retention Hub</h1>
+            <p class="text-[10px] sm:text-xs text-gray-400 truncate hidden sm:block">Inactive Alerts & Member Directory</p>
           </div>
         </div>
 
-        <button onclick="openAddMemberModal()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-gray-950 font-bold text-xs shadow hover:scale-[1.02] transition-all">
-          + Add Member
-        </button>
+        <div class="header-actions flex items-center space-x-1.5 sm:space-x-3 flex-shrink-0">
+          <button onclick="openAddMemberModal()" class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-gray-950 font-bold text-[11px] sm:text-xs shadow hover:scale-[1.02] transition-all">
+            + Add Member
+          </button>
+        </div>
       </header>
 
       <!-- Main Body -->
-      <main class="p-6 space-y-6 flex-1">
+      <main class="p-3 sm:p-6 space-y-4 sm:space-y-6 flex-1">
 
         <!-- Tabs Header -->
-        <div class="flex border-b border-gray-800 space-x-2 sm:space-x-4 overflow-x-auto">
-          <button id="tab-btn-expiring" onclick="switchTab('expiring')" class="py-3 px-4 font-bold text-sm border-b-2 border-amber-500 text-amber-400 flex items-center space-x-2 whitespace-nowrap">
-            <span>⏳ Expiring Soon (3 Days)</span>
-            <span id="expiring-count-badge" class="px-2 py-0.5 rounded-full text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30">0</span>
+        <div class="mobile-scroll-tabs border-b border-gray-800 pb-0">
+          <button id="tab-btn-expiring" onclick="switchTab('expiring')" class="py-2.5 sm:py-3 px-3 sm:px-4 font-bold text-[11px] sm:text-sm border-b-2 border-amber-500 text-amber-400 flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
+            <span>⏳ Expiring Soon</span>
+            <span id="expiring-count-badge" class="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30">0</span>
           </button>
-          <button id="tab-btn-inactive" onclick="switchTab('inactive')" class="py-3 px-4 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap">
-            <span>🚨 Inactive Alerts (3+ Days)</span>
-            <span id="inactive-count-badge" class="px-2 py-0.5 rounded-full text-xs bg-rose-500/20 text-rose-400 border border-rose-500/30">0</span>
+          <button id="tab-btn-inactive" onclick="switchTab('inactive')" class="py-2.5 sm:py-3 px-3 sm:px-4 font-bold text-[11px] sm:text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
+            <span>🚨 Inactive Alerts</span>
+            <span id="inactive-count-badge" class="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-xs bg-rose-500/20 text-rose-400 border border-rose-500/30">0</span>
           </button>
-          <button id="tab-btn-all" onclick="switchTab('all')" class="py-3 px-4 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap">
-            <span>👥 All Gym Members</span>
-            <span id="all-count-badge" class="px-2 py-0.5 rounded-full text-xs bg-gray-800 text-gray-300">0</span>
+          <button id="tab-btn-all" onclick="switchTab('all')" class="py-2.5 sm:py-3 px-3 sm:px-4 font-bold text-[11px] sm:text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
+            <span>👥 All Members</span>
+            <span id="all-count-badge" class="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-xs bg-gray-800 text-gray-300">0</span>
           </button>
         </div>
 
@@ -291,6 +293,7 @@
 
     function renderExpiringTable(list) {
       const tbody = document.getElementById('expiring-table-body');
+      if (!tbody) return;
       const safeList = Array.isArray(list) ? list : [];
       if (safeList.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-emerald-400 font-semibold">🎉 No memberships expiring in the next 3 days! All plans healthy.</td></tr>`;
@@ -338,6 +341,7 @@
 
     function renderInactiveTable(list) {
       const tbody = document.getElementById('inactive-table-body');
+      if (!tbody) return;
       const safeList = Array.isArray(list) ? list : [];
       if (safeList.length === 0) {
         tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-emerald-400 font-semibold">🎉 All members are active! No 3+ day absent alerts today.</td></tr>`;
@@ -382,6 +386,7 @@
 
     function renderAllMembersTable(list) {
       const tbody = document.getElementById('all-table-body');
+      if (!tbody) return;
       const safeList = Array.isArray(list) ? list : [];
       if (safeList.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-gray-500">No members found.</td></tr>`;
@@ -477,7 +482,35 @@
       }
     });
 
+    window.openAddMemberModal = openAddMemberModal;
+    window.closeAddMemberModal = closeAddMemberModal;
+    window.switchTab = switchTab;
+
     loadMembersData();
   </script>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+    <a href="owner-dashboard.html" onclick="OwnerSidebar.handleNavClick(event, 'owner-dashboard.html')">
+      <span class="nav-icon">📊</span>
+      <span>Dashboard</span>
+    </a>
+    <a href="owner-members.html" class="active" onclick="OwnerSidebar.handleNavClick(event, 'owner-members.html')">
+      <span class="nav-icon">👥</span>
+      <span>Members</span>
+    </a>
+    <a href="owner-payments.html" onclick="OwnerSidebar.handleNavClick(event, 'owner-payments.html')">
+      <span class="nav-icon">💳</span>
+      <span>Payments</span>
+    </a>
+    <a href="owner-expenses.html" onclick="OwnerSidebar.handleNavClick(event, 'owner-expenses.html')">
+      <span class="nav-icon">💰</span>
+      <span>Expenses</span>
+    </a>
+    <a href="owner-subscription.html" onclick="OwnerSidebar.handleNavClick(event, 'owner-subscription.html')">
+      <span class="nav-icon">⚡</span>
+      <span>Plan</span>
+    </a>
+  </nav>
 </body>
 </html>

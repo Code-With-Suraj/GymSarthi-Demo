@@ -102,23 +102,35 @@ const OwnerRouter = {
             document.body.appendChild(modalClone);
           });
 
-          // Update header title if present
+          // Update header title and subtitle
           const newHeaderTitle = doc.querySelector('header h1');
           const newHeaderSub = doc.querySelector('header p');
           const currentHeaderTitle = document.querySelector('header h1');
           const currentHeaderSub = document.querySelector('header p');
-          const currentHeaderActions = document.querySelector('header button:not(#mobile-menu-toggle), header a');
-          const newHeaderActions = doc.querySelector('header button:not(#mobile-menu-toggle), header a');
 
           if (newHeaderTitle && currentHeaderTitle) currentHeaderTitle.textContent = newHeaderTitle.textContent;
           if (newHeaderSub && currentHeaderSub) currentHeaderSub.textContent = newHeaderSub.textContent;
 
-          // Replace header right-side action buttons if needed
-          const headerContainer = document.querySelector('header');
-          if (headerContainer && newHeaderActions) {
-            const oldActions = headerContainer.querySelectorAll('button:not(#mobile-menu-toggle), a:not(#mobile-menu-toggle)');
-            oldActions.forEach(btn => btn.remove());
-            headerContainer.appendChild(newHeaderActions.cloneNode(true));
+          // Replace header right-side action elements cleanly
+          const currentHeader = document.querySelector('header');
+          const newHeader = doc.querySelector('header');
+
+          if (currentHeader && newHeader) {
+            // Find action container or buttons in current header (excluding mobile toggle and header title wrapper)
+            const currentActions = currentHeader.querySelector('.header-actions');
+            const newActions = newHeader.querySelector('.header-actions');
+
+            if (currentActions && newActions) {
+              currentActions.innerHTML = newActions.innerHTML;
+            } else if (currentActions) {
+              currentActions.innerHTML = '';
+            } else {
+              // Fallback for buttons directly in header
+              const oldBtns = currentHeader.querySelectorAll('button:not(#mobile-menu-toggle), a:not(#mobile-menu-toggle)');
+              oldBtns.forEach(btn => btn.remove());
+              const newBtns = newHeader.querySelectorAll('button:not(#mobile-menu-toggle), a:not(#mobile-menu-toggle)');
+              newBtns.forEach(btn => currentHeader.appendChild(btn.cloneNode(true)));
+            }
           }
 
           // Execute embedded view scripts
@@ -164,12 +176,13 @@ const OwnerRouter = {
           document.body.appendChild(newScript);
         }
       } else {
-        // Inline page script execution
+        // Inline page script execution in global window scope
         const inlineCode = script.textContent;
         if (inlineCode && !inlineCode.includes('Auth.requireAuth')) {
           try {
-            const fn = new Function(inlineCode);
-            fn();
+            const scriptTag = document.createElement('script');
+            scriptTag.textContent = inlineCode;
+            document.body.appendChild(scriptTag);
           } catch (e) {
             console.warn('Inline script execution warning:', e);
           }

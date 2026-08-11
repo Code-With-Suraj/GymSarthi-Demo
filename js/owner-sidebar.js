@@ -137,6 +137,16 @@ const OwnerSidebar = {
         link.className = 'sidebar-nav-item flex items-center justify-between px-4 py-2.5 rounded-xl transition-all text-xs sm:text-sm text-gray-400 hover:bg-gray-800/60 hover:text-gray-200 font-medium';
       }
     });
+
+    const mobileBottomNavLinks = document.querySelectorAll('#mobile-bottom-nav a');
+    mobileBottomNavLinks.forEach(link => {
+      const href = link.getAttribute('href') || '';
+      if (href.includes(activeKey)) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
   }
 };
 
