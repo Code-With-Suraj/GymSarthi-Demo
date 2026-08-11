@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Owner Dashboard — GymSarthi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <meta name="theme-color" content="#090D16">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="assets/logo.png">
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>
+    .profit-card-emerald {
+      background: linear-gradient(135deg, rgba(6, 78, 59, 0.4) 0%, rgba(17, 24, 39, 0.9) 60%, rgba(16, 185, 129, 0.15) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.15);
+    }
+    .loss-card-rose {
+      background: linear-gradient(135deg, rgba(136, 19, 55, 0.4) 0%, rgba(17, 24, 39, 0.9) 60%, rgba(244, 63, 94, 0.15) 100%);
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      box-shadow: 0 0 30px rgba(244, 63, 94, 0.15);
+    }
+  </style>
+</head>
+<body class="bg-[#090D16] text-gray-100 min-h-screen">
+
+  <div class="flex">
+    <!-- Sidebar Container -->
+    <div id="sidebar-container"></div>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 lg:pl-64 flex flex-col min-h-screen">
+      <!-- SaaS Subscription Renewal & App Blocking Modal -->
+  <div id="sub-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto">
+    <div class="glass-card bg-gray-900/95 border-emerald-500/30 w-full max-w-4xl rounded-3xl p-6 sm:p-8 space-y-6 relative max-h-[90vh] overflow-y-auto">
+      <div id="sub-modal-close-btn" class="absolute top-6 right-6 hidden">
+        <button onclick="closeRenewModal()" class="text-gray-400 hover:text-white p-2 text-xl font-bold">✕</button>
+      </div>
+
+      <div class="text-center space-y-2">
+        <div class="inline-flex p-3 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-2xl font-black mb-2">
+          💎 GymSarthi SaaS Subscriptions
+        </div>
+        <h2 id="sub-modal-title" class="text-2xl sm:text-3xl font-black text-white">Select App Subscription Plan</h2>
+        <p id="sub-modal-subtitle" class="text-gray-400 text-sm max-w-xl mx-auto">
+          Choose a SaaS plan to activate or renew your gym's automated attendance, payments, member retention alerts & store management engine.
+        </p>
+      </div>
+
+      <!-- Current Subscription Badge -->
+      <div id="sub-modal-status-badge" class="bg-gray-800/80 border border-gray-700 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 text-sm">
+        <div>
+          <span class="text-gray-400">Current Status:</span>
+          <span id="modal-sub-status" class="font-extrabold text-amber-400 ml-2">Checking...</span>
+        </div>
+        <div>
+          <span class="text-gray-400">Days Left:</span>
+          <span id="modal-sub-days" class="font-black text-white ml-2">--</span>
+        </div>
+        <div>
+          <span class="text-gray-400">Expiry Date:</span>
+          <span id="modal-sub-expiry" class="font-bold text-gray-300 ml-2">--</span>
+        </div>
+      </div>
+
+      <!-- Plans Grid -->
+      <div id="saas-plans-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="text-center text-xs text-gray-500 pt-2">
+        🔒 256-bit Encrypted Payments powered by Razorpay. Need assistance? Contact GymSarthi Support (+91 9876543210).
+      </div>
+    </div>
+  </div>
+
+      <!-- Subscription Warning Top Banner (7-day alert) -->
+      <div id="sub-warning-banner" class="hidden bg-amber-500/20 border-b border-amber-500/40 text-amber-300 px-6 py-3 flex flex-wrap items-center justify-between gap-3 text-sm font-semibold sticky top-0 z-40 backdrop-blur-md">
+        <div class="flex items-center space-x-2">
+          <span class="text-xl">⚠️</span>
+          <span id="sub-warning-text">Your GymSarthi SaaS Subscription expires soon! Renew to keep app active.</span>
+        </div>
+        <button onclick="openRenewModal()" class="px-4 py-1.5 bg-amber-500 hover:bg-amber-400 text-black font-extrabold rounded-lg text-xs transition shadow-lg flex items-center space-x-1">
+          <span>Renew Subscription Now</span> <span>🚀</span>
+        </button>
+      </div>
+
+      <!-- Top Mobile Navigation Header -->
+      <header class="h-20 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800 flex items-center justify-between px-6 sticky top-0 z-30">
+        <div class="flex items-center space-x-4">
+          <button id="mobile-menu-toggle" class="lg:hidden p-2 text-gray-400 hover:text-white rounded-lg">
+            ☰
+          </button>
+          <div>
+            <h1 class="text-xl font-bold text-white">Owner Executive Dashboard</h1>
+            <p class="text-xs text-gray-400">GymSarthi Real-time Financial Health & Retention Engine</p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <button onclick="loadDashboardMetrics()" class="p-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-emerald-400 transition-colors" title="Refresh Live Metrics">
+            🔄
+          </button>
+          <span id="plan-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            PRO PLAN ACTIVE
+          </span>
+        </div>
+      </header>
+
+      <!-- Dashboard Body -->
+      <main class="p-6 space-y-6 flex-1">
+
+        <!-- HERO SECTION: PROFIT OR LOSS EXECUTIVE SUMMARY CARD -->
+        <div id="profit-loss-hero" class="glass-card p-6 sm:p-8 rounded-3xl transition-all duration-300 relative overflow-hidden profit-card-emerald">
+          <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
+            
+            <!-- Left Column: Net Result -->
+            <div class="space-y-2">
+              <div class="flex items-center space-x-3">
+                <span id="pnl-status-badge" class="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 uppercase tracking-wider flex items-center space-x-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                  <span id="pnl-badge-text">NET PROFIT ACTIVE</span>
+                </span>
+                <span class="text-xs text-gray-400">Monthly P&L Audit</span>
+              </div>
+
+              <div class="flex items-baseline space-x-3">
+                <h2 id="kpi-net-profit" class="text-4xl sm:text-5xl font-black text-emerald-400 tracking-tight">₹0</h2>
+                <span id="kpi-margin-text" class="text-sm font-bold px-2.5 py-1 rounded-lg bg-gray-800/80 text-emerald-400 border border-emerald-500/30">
+                  +0% Net Margin
+                </span>
+              </div>
+
+              <p class="text-xs text-gray-300">Net earnings calculated after deducting all operational costs from total gym sales.</p>
+            </div>
+
+            <!-- Right Column: Financial Breakdown Bars -->
+            <div class="w-full lg:w-96 space-y-3 bg-gray-950/60 p-4 rounded-2xl border border-gray-800/80">
+              <div class="flex justify-between text-xs font-bold">
+                <span class="text-gray-300">Total Sales (Revenue):</span>
+                <span id="hero-total-sales" class="text-emerald-400">₹0</span>
+              </div>
+              <div class="flex justify-between text-xs font-bold">
+                <span class="text-gray-300">Total Expenses (Outflow):</span>
+                <span id="hero-total-expenses" class="text-rose-400">₹0</span>
+              </div>
+
+              <!-- Visual Progress Bar -->
+              <div class="w-full h-3 bg-gray-900 rounded-full overflow-hidden flex">
+                <div id="bar-sales" class="bg-emerald-500 h-full transition-all" style="width: 50%"></div>
+                <div id="bar-expense" class="bg-rose-500 h-full transition-all" style="width: 50%"></div>
+              </div>
+              <div class="flex justify-between text-[10px] text-gray-400 font-semibold">
+                <span>Revenue Share</span>
+                <span>Expense Share</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Metric KPI Cards Grid (6 Dedicated Cards) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          <!-- 1. Active Members -->
+          <div class="glass-card p-4 rounded-2xl border-emerald-500/30 bg-emerald-950/10 glass-card-hover">
+            <div class="flex items-center justify-between text-emerald-400 text-xs font-bold uppercase">
+              <span>Active Members</span>
+              <span>🟢</span>
+            </div>
+            <p id="kpi-active-members" class="text-2xl font-black text-white mt-2">0</p>
+            <p class="text-[11px] text-emerald-400 mt-1">Enrolled & Valid</p>
+          </div>
+
+          <!-- 2. Leave / Inactive Members -->
+          <div class="glass-card p-4 rounded-2xl border-rose-500/30 bg-rose-950/10 glass-card-hover">
+            <div class="flex items-center justify-between text-rose-400 text-xs font-bold uppercase">
+              <span>Leave / Absent</span>
+              <span>🚨</span>
+            </div>
+            <p id="kpi-leave-members" class="text-2xl font-black text-rose-400 mt-2">0</p>
+            <p class="text-[11px] text-gray-400 mt-1">3+ Days Absent / Expired</p>
+          </div>
+
+          <!-- 3. Memberships Sold -->
+          <div class="glass-card p-4 rounded-2xl border-gray-800 glass-card-hover">
+            <div class="flex items-center justify-between text-gray-400 text-xs font-bold uppercase">
+              <span>Memberships</span>
+              <span>🏷️</span>
+            </div>
+            <p id="kpi-memberships-count" class="text-2xl font-black text-cyan-400 mt-2">0</p>
+            <p class="text-[11px] text-gray-400 mt-1">Active Passes</p>
+          </div>
+
+          <!-- 4. Total Sales -->
+          <div class="glass-card p-4 rounded-2xl border-gray-800 glass-card-hover">
+            <div class="flex items-center justify-between text-gray-400 text-xs font-bold uppercase">
+              <span>Total Sales</span>
+              <span>💰</span>
+            </div>
+            <p id="kpi-total-sales" class="text-2xl font-black text-emerald-400 mt-2">₹0</p>
+            <p class="text-[11px] text-gray-400 mt-1">Passes + Store Orders</p>
+          </div>
+
+          <!-- 5. Total Expenses -->
+          <div class="glass-card p-4 rounded-2xl border-gray-800 glass-card-hover">
+            <div class="flex items-center justify-between text-gray-400 text-xs font-bold uppercase">
+              <span>Total Expenses</span>
+              <span>💸</span>
+            </div>
+            <p id="kpi-total-expenses" class="text-2xl font-black text-rose-400 mt-2">₹0</p>
+            <p class="text-[11px] text-gray-400 mt-1">Rent, Salary, Power</p>
+          </div>
+
+          <!-- 6. Pending Cash -->
+          <div class="glass-card p-4 rounded-2xl border-amber-500/30 bg-amber-950/10 glass-card-hover">
+            <div class="flex items-center justify-between text-amber-400 text-xs font-bold uppercase">
+              <span>Pending Cash</span>
+              <span>💵</span>
+            </div>
+            <p id="kpi-pending-cash" class="text-2xl font-black text-amber-400 mt-2">₹0</p>
+            <p class="text-[11px] text-gray-400 mt-1">Unsettled Cash</p>
+          </div>
+        </div>
+
+        <!-- DEDICATED VIEW TABS -->
+        <div class="flex border-b border-gray-800 space-x-2 sm:space-x-4 overflow-x-auto pb-1 sm:pb-0">
+          <button id="tab-btn-overview" onclick="switchDashboardTab('overview')" class="py-3 px-4 font-bold text-xs sm:text-sm border-b-2 border-emerald-500 text-emerald-400 flex items-center space-x-2 whitespace-nowrap">
+            <span>📊 Overview & Analytics</span>
+          </button>
+          <button id="tab-btn-active" onclick="switchDashboardTab('active')" class="py-3 px-4 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap">
+            <span>🟢 Active Members</span>
+            <span id="badge-active-count" class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-400">0</span>
+          </button>
+          <button id="tab-btn-leave" onclick="switchDashboardTab('leave')" class="py-3 px-4 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap">
+            <span>🔴 Leave / Inactive Members</span>
+            <span id="badge-leave-count" class="px-2 py-0.5 rounded-full text-[10px] bg-rose-500/20 text-rose-400">0</span>
+          </button>
+          <button id="tab-btn-packages" onclick="switchDashboardTab('packages')" class="py-3 px-4 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap">
+            <span>🏷️ Memberships & Packages</span>
+          </button>
+        </div>
+
+        <!-- TAB 1: OVERVIEW & ANALYTICS VIEW -->
+        <div id="dash-section-overview" class="space-y-6">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Gate QR Poster Card -->
+            <div class="glass-card p-6 rounded-3xl border-gray-800 text-center space-y-4">
+              <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+                <h3 class="font-bold text-white text-sm">Gym Gate Attendance QR</h3>
+                <span class="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded">A4 Printable Poster</span>
+              </div>
+
+              <div class="bg-white p-4 rounded-2xl inline-block shadow-xl border-4 border-emerald-500">
+                <img id="gate-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=GYM_FITNESS_001" alt="Gym Gate QR Code" class="w-44 h-44 mx-auto">
+              </div>
+
+              <div>
+                <p id="gate-gym-name" class="font-bold text-sm text-white">PowerHouse Fitness Gym Gate</p>
+                <p class="text-xs text-gray-400 mt-0.5">Scan with GymSarthi App to Check-In & Out</p>
+              </div>
+
+              <button onclick="Utils.printGateQRPoster(CONFIG.GYM_NAME, CONFIG.GYM_ID, CONFIG.GYM_ADDRESS, CONFIG.GYM_PHONE)" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-gray-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-[1.01] transition-all flex items-center justify-center space-x-2">
+                <span>🖨️ Print High-Quality Gate Poster</span>
+              </button>
+            </div>
+
+            <!-- Inactive Members Retention Alert Preview Table -->
+            <div class="glass-card p-6 rounded-3xl border-gray-800 lg:col-span-2 space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="font-bold text-white text-sm flex items-center space-x-2">
+                  <span class="text-rose-400">📞 Leave Members Requiring Phone Followup</span>
+                </h3>
+                <button onclick="switchDashboardTab('leave')" class="text-xs text-emerald-400 font-bold hover:underline">View All Leave Members ➔</button>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                  <thead>
+                    <tr class="border-b border-gray-800 text-gray-400 uppercase font-semibold">
+                      <th class="py-2.5 px-2">Member</th>
+                      <th class="py-2.5 px-2">Absence / Expiry</th>
+                      <th class="py-2.5 px-2">Last Attendance</th>
+                      <th class="py-2.5 px-2 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="overview-leave-preview" class="divide-y divide-gray-800/60 text-gray-300">
+                    <tr><td colspan="4" class="py-4 text-center text-gray-500">Checking attendance logs...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- TAB 2: ACTIVE MEMBERS DEDICATED VIEW -->
+        <div id="dash-section-active" class="space-y-4 hidden">
+          <div class="glass-card rounded-3xl border-gray-800 overflow-hidden">
+            <div class="p-4 border-b border-gray-800 flex items-center justify-between">
+              <h3 class="font-bold text-white text-sm">Active Gym Members Directory</h3>
+              <span class="text-xs text-emerald-400 font-semibold">Members with Active Gym Membership</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-gray-900/90 text-gray-400 uppercase font-semibold border-b border-gray-800">
+                  <tr>
+                    <th class="py-3 px-4">Member Name</th>
+                    <th class="py-3 px-4">Mobile</th>
+                    <th class="py-3 px-4">Package</th>
+                    <th class="py-3 px-4">Start Date</th>
+                    <th class="py-3 px-4">Expiry Date</th>
+                    <th class="py-3 px-4 text-right">Payment Status</th>
+                  </tr>
+                </thead>
+                <tbody id="active-members-table" class="divide-y divide-gray-800/60 text-gray-300">
+                  <tr><td colspan="6" class="py-6 text-center text-gray-500">Loading active members...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: LEAVE / INACTIVE MEMBERS DEDICATED VIEW -->
+        <div id="dash-section-leave" class="space-y-4 hidden">
+          <div class="glass-card p-4 rounded-2xl border-rose-500/40 bg-gradient-to-r from-rose-950/20 via-gray-900 to-gray-900 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <span class="text-2xl">📞</span>
+              <div>
+                <h3 class="font-extrabold text-sm text-white">Leave & Inactive Members Retention Center</h3>
+                <p class="text-xs text-gray-400">Members who haven't attended gym for 3+ days or whose membership has expired. Call or WhatsApp to re-engage.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card rounded-3xl border-gray-800 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-gray-900/90 text-gray-400 uppercase font-semibold border-b border-gray-800">
+                  <tr>
+                    <th class="py-3 px-4">Member Name</th>
+                    <th class="py-3 px-4">Mobile</th>
+                    <th class="py-3 px-4">Absence / Status</th>
+                    <th class="py-3 px-4">Last Attendance</th>
+                    <th class="py-3 px-4 text-center">Retention Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="leave-members-table" class="divide-y divide-gray-800/60 text-gray-300">
+                  <tr><td colspan="5" class="py-6 text-center text-gray-500">Loading leave members...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: MEMBERSHIP & PACKAGE SALES VIEW -->
+        <div id="dash-section-packages" class="space-y-4 hidden">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5" id="packages-cards-grid">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+      </main>
+
+      <footer class="border-t border-gray-800 p-4 text-center text-xs text-gray-500">
+        GymSarthi Owner Portal • Powered by Google Apps Script REST API
+      </footer>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/pwa.js"></script>
+  <script src="js/owner-sidebar.js"></script>
+  <script>
+    Auth.requireAuth('OWNER');
+    OwnerSidebar.render('dashboard');
+
+    let globalMembers = [];
+    let globalInactives = [];
+    let globalPayments = [];
+    let globalExpenses = [];
+    let globalPackages = [];
+    let globalSubscription = null;
+    let globalPlans = [];
+
+    async function loadDashboardMetrics(forceRefresh = false) {
+      try {
+        // Fetch raw batch data in single API call
+        const dashData = await Api.getDashboardData(CONFIG.GYM_ID, forceRefresh).catch(err => {
+          console.error('Failed to load dashboard batch data:', err);
+          return null;
+        });
+
+        if (dashData) {
+          globalMembers = Array.isArray(dashData.members) ? dashData.members : [];
+          globalInactives = Array.isArray(dashData.inactiveMembers) ? dashData.inactiveMembers : [];
+          globalPayments = Array.isArray(dashData.payments) ? dashData.payments : [];
+          globalExpenses = Array.isArray(dashData.expenses) ? dashData.expenses : [];
+          globalPackages = Array.isArray(dashData.packages) ? dashData.packages : [];
+          globalSubscription = dashData.subscription || null;
+          globalPlans = Array.isArray(dashData.plans) ? dashData.plans : [];
+        }
+
+        // Populate Gate QR Card
+        const gateQrImg = document.getElementById('gate-qr-img');
+        const gateGymName = document.getElementById('gate-gym-name');
+        if (gateQrImg) gateQrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(CONFIG.GYM_ID)}`;
+        if (gateGymName) gateGymName.textContent = `${CONFIG.GYM_NAME} Gate`;
+
+        // Process SaaS Subscription status
+        handleSubscriptionState(globalSubscription, globalPlans);
+
+        // Process Financials & Metrics
+        calculateFinancials();
+        renderActiveMembersTable();
+        renderLeaveMembersTable();
+        renderPackagesGrid();
+
+      } catch (err) {
+        console.warn('Dashboard load error:', err);
+      }
+    }
+
+    function handleSubscriptionState(sub, plans) {
+      const banner = document.getElementById('sub-warning-banner');
+      const warningText = document.getElementById('sub-warning-text');
+      const planBadge = document.getElementById('plan-badge');
+
+      if (!sub) return;
+
+      if (planBadge) {
+        planBadge.textContent = `${sub.planId || 'SAAS'} (${sub.status || 'ACTIVE'})`;
+        planBadge.onclick = () => openRenewModal(false);
+        planBadge.style.cursor = 'pointer';
+      }
+
+      // 1. Check 7-day warning banner
+      if (sub.showWarningBanner || sub.daysRemaining <= 7) {
+        banner.classList.remove('hidden');
+        if (sub.isExpired || sub.hasActiveSubscription === false) {
+          warningText.innerHTML = `🚨 <b>CRITICAL ALERT</b>: GymSarthi App Subscription is <b>EXPIRED</b>. Functional access is paused.`;
+        } else {
+          warningText.innerHTML = `⚠️ <b>SUBSCRIPTION EXPIRING SOON</b>: Expires in <b>${sub.daysRemaining} days</b> (${sub.expiryDate}). Renew now to prevent disruption!`;
+        }
+      } else {
+        banner.classList.add('hidden');
+      }
+
+      // 2. Check blocking modal (if expired or unregistered)
+      if (sub.isExpired || sub.hasActiveSubscription === false) {
+        openRenewModal(true); // isBlocking = true
+      }
+    }
+
+    function openRenewModal(isBlocking = false) {
+      const modal = document.getElementById('sub-modal');
+      const closeBtn = document.getElementById('sub-modal-close-btn');
+      const grid = document.getElementById('saas-plans-grid');
+      const sub = globalSubscription || {};
+
+      document.getElementById('modal-sub-status').textContent = sub.status || 'Expired / Unregistered';
+      document.getElementById('modal-sub-days').textContent = sub.daysRemaining !== undefined ? `${sub.daysRemaining} Days` : '0 Days';
+      document.getElementById('modal-sub-expiry').textContent = sub.expiryDate || 'N/A';
+
+      if (isBlocking) {
+        closeBtn.classList.add('hidden');
+      } else {
+        closeBtn.classList.remove('hidden');
+      }
+
+      renderSaasPlans(globalPlans, sub.planId);
+      modal.classList.remove('hidden');
+    }
+
+    function closeRenewModal() {
+      document.getElementById('sub-modal').classList.add('hidden');
+    }
+
+    function renderSaasPlans(plans, currentPlanId) {
+      const grid = document.getElementById('saas-plans-grid');
+      if (!plans || plans.length === 0) {
+        grid.innerHTML = `<div class="col-span-2 text-center text-gray-400 py-6">No SaaS plans found. Please initialize subscription database.</div>`;
+        return;
+      }
+
+      grid.innerHTML = plans.map(p => {
+        const isCurrent = p.id === currentPlanId;
+        const features = Array.isArray(p.features) ? p.features : [];
+
+        return `
+          <div class="glass-card p-6 rounded-3xl border-gray-800 flex flex-col justify-between space-y-4 hover:border-emerald-500/50 transition ${isCurrent ? 'ring-2 ring-emerald-500/50 bg-emerald-950/20' : ''}">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="px-3 py-1 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  ${p.badge || 'SaaS Plan'}
+                </span>
+                <span class="text-xs text-gray-400 font-mono">${p.durationDays} Days</span>
+              </div>
+              <h3 class="text-xl font-black text-white">${p.title}</h3>
+              <div class="text-3xl font-black text-emerald-400">
+                ₹${p.price.toLocaleString('en-IN')} <span class="text-xs font-normal text-gray-400">/ ${p.durationDays} days</span>
+              </div>
+              <ul class="space-y-1.5 text-xs text-gray-300">
+                ${features.map(f => `<li class="flex items-center space-x-2"><span class="text-emerald-400">✓</span><span>${f}</span></li>`).join('')}
+              </ul>
+            </div>
+            <button onclick="handlePlanPayment('${p.id}', ${p.price}, '${p.title}')" class="w-full py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-sm transition shadow-lg flex items-center justify-center space-x-2">
+              <span>Select & Pay via Razorpay</span> <span>💳</span>
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function handlePlanPayment(planId, amount, title) {
+      try {
+        Utils.showToast(`Initiating Razorpay payment for ${title}...`, 'info');
+
+        const options = {
+          key: CONFIG.RAZORPAY_KEY_ID || 'rzp_live_placeholder',
+          amount: amount * 100, // in paise
+          currency: 'INR',
+          name: 'GymSarthi Automation',
+          description: `SaaS Subscription: ${title}`,
+          handler: async function (response) {
+            Utils.showToast('Payment successful! Renewing subscription on server...', 'info');
+            const res = await Api.renewSubscription(CONFIG.GYM_ID, planId, response.razorpay_payment_id || 'pay_demo_success');
+            Utils.showToast(res.message || 'Subscription renewed! 🎉', 'success');
+            closeRenewModal();
+            loadDashboardMetrics(true);
+          },
+          prefill: {
+            name: CONFIG.GYM_NAME,
+            contact: '9876543210'
+          },
+          theme: {
+            color: '#10B981'
+          }
+        };
+
+        if (typeof Razorpay !== 'undefined') {
+          const rzp = new Razorpay(options);
+          rzp.open();
+        } else {
+          // Fallback if Razorpay CDN blocked or offline
+          const confirmPayment = confirm(`Simulate Razorpay payment of ₹${amount} for ${title}?`);
+          if (confirmPayment) {
+            const res = await Api.renewSubscription(CONFIG.GYM_ID, planId, 'pay_simulated_' + Date.now());
+            Utils.showToast(res.message || 'Subscription renewed! 🎉', 'success');
+            closeRenewModal();
+            loadDashboardMetrics(true);
+          }
+        }
+      } catch (err) {
+        Utils.showToast(err.message || 'Payment failed', 'error');
+      }
+    }
+
+    function calculateFinancials() {
+      // Total Sales / Revenue
+      const totalSales = globalPayments
+        .filter(p => p.status === 'SUCCESS' || p.status === 'COMPLETED' || p.status === 'PAID')
+        .reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+
+      // Pending Cash Float
+      const pendingCash = globalPayments
+        .filter(p => p.status === 'PENDING' || p.status === 'PENDING_CASH' || p.status === 'UNPAID')
+        .reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+
+      // Total Expenses
+      const totalExpenses = globalExpenses.reduce((acc, e) => acc + (Number(e.amount) || 0), 0);
+
+      // Net Profit or Loss
+      const netProfitOrLoss = totalSales - totalExpenses;
+
+      // Active vs Leave Members count
+      const activeMembers = globalMembers.filter(m => (m.status || 'ACTIVE').toUpperCase() === 'ACTIVE');
+      const leaveMembers = globalInactives.length > 0 ? globalInactives : globalMembers.filter(m => (m.status || '').toUpperCase() !== 'ACTIVE' || (m.days_absent && m.days_absent >= 3));
+
+      // Update KPIs
+      document.getElementById('kpi-active-members').textContent = activeMembers.length;
+      document.getElementById('badge-active-count').textContent = activeMembers.length;
+
+      document.getElementById('kpi-leave-members').textContent = leaveMembers.length;
+      document.getElementById('badge-leave-count').textContent = leaveMembers.length;
+
+      document.getElementById('kpi-memberships-count').textContent = globalMembers.length;
+      document.getElementById('kpi-total-sales').textContent = `₹${totalSales.toLocaleString('en-IN')}`;
+      document.getElementById('kpi-total-expenses').textContent = `₹${totalExpenses.toLocaleString('en-IN')}`;
+      document.getElementById('kpi-pending-cash').textContent = `₹${pendingCash.toLocaleString('en-IN')}`;
+
+      // Update Hero Profit/Loss Card
+      document.getElementById('hero-total-sales').textContent = `₹${totalSales.toLocaleString('en-IN')}`;
+      document.getElementById('hero-total-expenses').textContent = `₹${totalExpenses.toLocaleString('en-IN')}`;
+
+      const heroCard = document.getElementById('profit-loss-hero');
+      const netEl = document.getElementById('kpi-net-profit');
+      const badgeText = document.getElementById('pnl-badge-text');
+      const badgeContainer = document.getElementById('pnl-status-badge');
+      const marginEl = document.getElementById('kpi-margin-text');
+
+      const isProfit = netProfitOrLoss >= 0;
+      const marginPct = totalSales > 0 ? Math.round((netProfitOrLoss / totalSales) * 100) : 0;
+
+      if (isProfit) {
+        heroCard.className = 'glass-card p-6 sm:p-8 rounded-3xl transition-all duration-300 relative overflow-hidden profit-card-emerald';
+        netEl.textContent = `+ ₹${netProfitOrLoss.toLocaleString('en-IN')}`;
+        netEl.className = 'text-4xl sm:text-5xl font-black text-emerald-400 tracking-tight';
+        badgeText.textContent = 'NET PROFIT ACTIVE';
+        badgeContainer.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 uppercase tracking-wider flex items-center space-x-1.5';
+        marginEl.textContent = `+${marginPct}% Net Margin`;
+        marginEl.className = 'text-sm font-bold px-2.5 py-1 rounded-lg bg-gray-800/80 text-emerald-400 border border-emerald-500/30';
+      } else {
+        heroCard.className = 'glass-card p-6 sm:p-8 rounded-3xl transition-all duration-300 relative overflow-hidden loss-card-rose';
+        netEl.textContent = `- ₹${Math.abs(netProfitOrLoss).toLocaleString('en-IN')}`;
+        netEl.className = 'text-4xl sm:text-5xl font-black text-rose-400 tracking-tight';
+        badgeText.textContent = 'NET LOSS ALERT';
+        badgeContainer.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-rose-500/20 text-rose-400 border border-rose-500/40 uppercase tracking-wider flex items-center space-x-1.5';
+        marginEl.textContent = `${marginPct}% Net Margin`;
+        marginEl.className = 'text-sm font-bold px-2.5 py-1 rounded-lg bg-gray-800/80 text-rose-400 border border-rose-500/30';
+      }
+
+      // Financial Progress Bars
+      const maxVal = Math.max(totalSales, totalExpenses, 1);
+      const salesPct = Math.round((totalSales / maxVal) * 100);
+      const expPct = Math.round((totalExpenses / maxVal) * 100);
+
+      document.getElementById('bar-sales').style.width = `${Math.min(salesPct, 100)}%`;
+      document.getElementById('bar-expense').style.width = `${Math.min(expPct, 100)}%`;
+    }
+
+    function renderActiveMembersTable() {
+      const tbody = document.getElementById('active-members-table');
+      const activeList = globalMembers.filter(m => (m.status || 'ACTIVE').toUpperCase() === 'ACTIVE');
+
+      if (activeList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-gray-500">No active members found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = activeList.map(m => `
+        <tr class="hover:bg-gray-900/40">
+          <td class="py-3.5 px-4 font-bold text-white">
+            <div>${m.name || 'Member'}</div>
+            <div class="text-[11px] text-gray-500">${m.member_id || ''}</div>
+          </td>
+          <td class="py-3.5 px-4 text-gray-300 font-medium">+91 ${m.mobile || ''}</td>
+          <td class="py-3.5 px-4 font-semibold text-emerald-400">${m.package_name || 'Standard'}</td>
+          <td class="py-3.5 px-4 text-gray-400 text-xs">${Utils.formatDate(m.start_date)}</td>
+          <td class="py-3.5 px-4 text-gray-400 text-xs">${Utils.formatDate(m.expiry_date)}</td>
+          <td class="py-3.5 px-4 text-right space-x-2">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${m.payment_status === 'PENDING_CASH' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}">
+              ${m.payment_status || 'PAID'}
+            </span>
+            <button onclick='Utils.printMemberIDCard(${JSON.stringify(m).replace(/'/g, "&apos;")}, CONFIG.GYM_NAME)' class="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-[11px] border border-gray-700 transition inline-flex items-center space-x-1" title="Print Member QR ID Card">
+              <span>Print ID</span> <span>💳</span>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderLeaveMembersTable() {
+      const overviewTbody = document.getElementById('overview-leave-preview');
+      const leaveTbody = document.getElementById('leave-members-table');
+
+      const leaveList = globalInactives.length > 0 ? globalInactives : globalMembers.filter(m => (m.status || '').toUpperCase() !== 'ACTIVE' || (m.days_absent && m.days_absent >= 3));
+
+      if (leaveList.length === 0) {
+        overviewTbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-emerald-400 font-semibold">🎉 Everyone is attending regularly! No leave members.</td></tr>`;
+        leaveTbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-emerald-400 font-semibold">🎉 No absent or leave members today!</td></tr>`;
+        return;
+      }
+
+      const renderRow = (m, isOverview = false) => {
+        const whatsappMsg = encodeURIComponent(`Hi ${m.name || 'Member'}, we missed you at ${CONFIG.GYM_NAME}! Consistency is key for your fitness goals. See you today! 💪`);
+
+        if (isOverview) {
+          return `
+            <tr class="hover:bg-gray-900/40">
+              <td class="py-3 px-2 font-bold text-white">${m.name || 'Member'}</td>
+              <td class="py-3 px-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                  ${m.days_absent ? `${m.days_absent} Days Absent` : (m.status || 'EXPIRED')}
+                </span>
+              </td>
+              <td class="py-3 px-2 text-xs text-gray-400">${Utils.formatDate(m.last_attendance_date)}</td>
+              <td class="py-3 px-2 text-right">
+                <a href="tel:+91${m.mobile || ''}" class="px-2.5 py-1 rounded-lg bg-rose-500 hover:bg-rose-600 text-white font-bold text-[11px] inline-flex items-center space-x-1">
+                  <span>Call</span> <span>📞</span>
+                </a>
+              </td>
+            </tr>
+          `;
+        }
+
+        return `
+          <tr class="hover:bg-gray-900/40">
+            <td class="py-3.5 px-4 font-bold text-white flex items-center space-x-3">
+              <div class="w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center font-bold text-xs">
+                ${(m.name || 'M').charAt(0)}
+              </div>
+              <span>${m.name || 'Member'}</span>
+            </td>
+            <td class="py-3.5 px-4 font-semibold text-gray-300">+91 ${m.mobile || ''}</td>
+            <td class="py-3.5 px-4">
+              <span class="px-2.5 py-1 rounded-full text-xs font-black bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                ${m.days_absent ? `⚠️ ${m.days_absent} Days Absent` : `🛑 ${m.status || 'EXPIRED'}`}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-gray-400 text-xs">${Utils.formatDate(m.last_attendance_date)}</td>
+            <td class="py-3.5 px-4 text-center space-x-2">
+              <a href="tel:+91${m.mobile || ''}" class="px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs inline-flex items-center space-x-1 shadow">
+                <span>Call Now</span> <span>📞</span>
+              </a>
+              <a href="https://wa.me/91${m.mobile || ''}?text=${whatsappMsg}" target="_blank" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center space-x-1 shadow">
+                <span>WhatsApp</span> <span>💬</span>
+              </a>
+            </td>
+          </tr>
+        `;
+      };
+
+      overviewTbody.innerHTML = leaveList.slice(0, 5).map(m => renderRow(m, true)).join('');
+      leaveTbody.innerHTML = leaveList.map(m => renderRow(m, false)).join('');
+    }
+
+    function renderPackagesGrid() {
+      const grid = document.getElementById('packages-cards-grid');
+
+      grid.innerHTML = globalPackages.map(p => {
+        const pkgMembers = globalMembers.filter(m => String(m.package_name || '').toLowerCase().includes(p.name.toLowerCase()));
+        const pkgSales = pkgMembers.length * p.price;
+
+        return `
+          <div class="glass-card p-5 rounded-3xl border-gray-800 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                ${p.duration_days} Days Pass
+              </span>
+              <span class="text-xs text-gray-400 font-mono">₹${p.price}</span>
+            </div>
+
+            <h4 class="font-extrabold text-white text-base">${p.name}</h4>
+
+            <div class="pt-2 border-t border-gray-800 flex justify-between items-center text-xs">
+              <span class="text-gray-400">Subscribers:</span>
+              <span class="font-bold text-white text-sm">${pkgMembers.length} Members</span>
+            </div>
+
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-gray-400">Estimated Sales:</span>
+              <span class="font-black text-emerald-400 text-sm">₹${pkgSales.toLocaleString('en-IN')}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function switchDashboardTab(tab) {
+      const tabs = ['overview', 'active', 'leave', 'packages'];
+
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-btn-${t}`);
+        const sec = document.getElementById(`dash-section-${t}`);
+
+        if (t === tab) {
+          btn.className = 'py-3 px-4 font-bold text-xs sm:text-sm border-b-2 border-emerald-500 text-emerald-400 flex items-center space-x-2 whitespace-nowrap';
+          sec.classList.remove('hidden');
+        } else {
+          btn.className = 'py-3 px-4 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap';
+          sec.classList.add('hidden');
+        }
+      });
+    }
+
+    loadDashboardMetrics();
+  </script>
+</body>
+</html>

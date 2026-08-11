@@ -1,0 +1,31 @@
+{
+  "name": "GymSarthi — Gym Member Retention & Management System",
+  "short_name": "GymSarthi",
+  "description": "Smart Gym Management, Member Attendance, Expense Manager & Store",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#090D16",
+  "theme_color": "#090D16",
+  "categories": ["fitness", "business", "productivity"],
+  "icons": [
+    {
+      "src": "assets/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

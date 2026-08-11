@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Member Dashboard — GymSarthi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <meta name="theme-color" content="#090D16">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="assets/logo.png">
+</head>
+<body class="bg-[#090D16] text-gray-100 min-h-screen flex flex-col justify-between">
+
+  <!-- Header Navigation -->
+  <header class="sticky top-0 z-50 backdrop-blur-xl bg-[#090D16]/90 border-b border-gray-800">
+    <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <img src="assets/logo.png" alt="GymSarthi Logo" class="w-9 h-9 rounded-xl object-cover shadow-md shadow-emerald-500/20 border border-emerald-500/30">
+        <span class="text-lg font-extrabold tracking-tight text-white">Gym<span class="gradient-text-emerald">Sarthi</span></span>
+      </div>
+
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <button onclick="PWA.install()" class="pwa-install-btn px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-400 border border-emerald-500/40 font-bold text-xs flex items-center space-x-1.5 hover:bg-emerald-500/30 transition-all pwa-install-trigger">
+          <span>📱 Install App</span>
+        </button>
+        <span id="user-display-name" class="text-xs font-semibold text-gray-300 hidden sm:inline-block">Member</span>
+        <button onclick="Auth.logout()" class="p-2 text-gray-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors text-xs font-semibold flex items-center space-x-1">
+          <span>Logout</span>
+          <span>🚪</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-4xl mx-auto w-full px-4 py-6 flex-1 space-y-6">
+
+    <!-- Welcome & Attendance Quick Punch Banner -->
+    <div class="glass-card p-6 rounded-3xl border-gray-800 bg-gradient-to-r from-emerald-950/40 via-gray-900 to-gray-900 shadow-xl relative overflow-hidden">
+      <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
+        <div>
+          <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active Member</span>
+          <h1 id="welcome-title" class="text-2xl sm:text-3xl font-black text-white mt-1">Hello, Athlete! 👋</h1>
+          <p id="today-status-text" class="text-sm text-gray-400 mt-1">Status: Checking gate status...</p>
+        </div>
+
+        <a href="qr-scanner.html" class="w-full sm:w-auto px-6 py-3.5 rounded-2xl font-black text-sm bg-gradient-to-r from-emerald-500 to-cyan-500 text-gray-950 shadow-lg shadow-emerald-500/25 hover:scale-105 transition-all flex items-center justify-center space-x-2">
+          <span class="text-lg">📷</span>
+          <span>Scan Gate QR Code</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Stats & Package Overview Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- Active Package -->
+      <div class="glass-card p-5 rounded-2xl border-gray-800 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Membership</span>
+            <span class="text-lg">🏷️</span>
+          </div>
+          <p id="pkg-name" class="text-lg font-bold text-white mt-2">Loading...</p>
+          <p id="pkg-expiry" class="text-xs text-emerald-400 font-semibold mt-1">Expiry: --</p>
+        </div>
+        <button id="print-id-card-btn" onclick="if(window.currentMemberProfile) Utils.printMemberIDCard(window.currentMemberProfile, CONFIG.GYM_NAME)" class="mt-3 py-1.5 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 font-bold text-xs flex items-center justify-center space-x-1 transition-all">
+          <span>🖨️ Print My QR ID Card</span>
+        </button>
+      </div>
+
+      <!-- Streak / Days Active -->
+      <div class="glass-card p-5 rounded-2xl border-gray-800">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Attendance Streak</span>
+          <span class="text-lg">🔥</span>
+        </div>
+        <p id="attendance-streak" class="text-2xl font-black text-amber-400 mt-2">0 Days</p>
+        <p class="text-xs text-gray-500 mt-1">Keep visiting to maintain workout consistency!</p>
+      </div>
+
+      <!-- Gym Store Shortcut -->
+      <div class="glass-card p-5 rounded-2xl border-gray-800 sm:col-span-2 lg:col-span-1 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Gym Supplement Store</span>
+          <span class="text-lg">🛒</span>
+        </div>
+        <p class="text-xs text-gray-300 mt-2">Buy whey protein, shakers, BCAA & workout supplements directly.</p>
+        <a href="store.html" class="mt-4 py-2 px-4 rounded-xl bg-gray-800 hover:bg-gray-700 text-emerald-400 font-bold text-xs text-center border border-gray-700 transition-colors">
+          Browse Store ➔
+        </a>
+      </div>
+    </div>
+
+    <!-- Attendance History Table -->
+    <div class="glass-card p-6 rounded-3xl border-gray-800">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-bold text-white flex items-center space-x-2">
+          <span>📋 Recent Attendance History</span>
+        </h2>
+        <span class="text-xs text-gray-500">Gate Check-In Logs</span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-gray-800 text-gray-400 uppercase font-semibold">
+              <th class="py-3 px-2">Date</th>
+              <th class="py-3 px-2">In Time</th>
+              <th class="py-3 px-2">Out Time</th>
+              <th class="py-3 px-2">Status</th>
+            </tr>
+          </thead>
+          <tbody id="attendance-list" class="divide-y divide-gray-800/60 text-gray-300">
+            <tr><td colspan="4" class="py-4 text-center text-gray-500">Loading attendance history...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <footer class="border-t border-gray-800 py-4 text-center text-xs text-gray-500">
+    GymSarthi Member App • Gate Attendance & Self Service
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/pwa.js"></script>
+  <script>
+    Auth.requireAuth('MEMBER');
+
+    const user = Auth.getUser();
+    document.getElementById('user-display-name').textContent = user.name || 'Member';
+    document.getElementById('welcome-title').textContent = `Hello, ${user.name || 'Athlete'}! 👋`;
+
+    async function loadDashboard() {
+      try {
+        const profile = await Api.getMemberProfile(user.member_id || user.id);
+        const memberData = profile || user;
+        window.currentMemberProfile = memberData;
+
+        document.getElementById('pkg-name').textContent = memberData.package_name || 'Standard Membership';
+        document.getElementById('pkg-expiry').textContent = memberData.expiry_date ? `Valid until ${Utils.formatDate(memberData.expiry_date)}` : 'Active';
+
+        // Load attendance
+        const attendanceLogs = await Api.getAttendance(CONFIG.GYM_ID, memberData.member_id || memberData.id);
+        renderAttendance(attendanceLogs);
+
+      } catch (err) {
+        console.warn('Dashboard load error:', err);
+        renderAttendance([]);
+      }
+    }
+
+    function renderAttendance(logs) {
+      const tbody = document.getElementById('attendance-list');
+      const streakEl = document.getElementById('attendance-streak');
+      const todayStatus = document.getElementById('today-status-text');
+
+      const safeLogs = Array.isArray(logs) ? logs : [];
+
+      if (safeLogs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-gray-500">No attendance scans recorded yet. Use the Scan Gate QR button above when entering the gym!</td></tr>`;
+        streakEl.textContent = '0 Days';
+        todayStatus.textContent = 'Status: Not punched today yet.';
+        return;
+      }
+
+      streakEl.textContent = `${safeLogs.length} Days`;
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      const todayLog = safeLogs.find(l => l.date === todayStr);
+
+      if (todayLog) {
+        if (todayLog.out_time) {
+          todayStatus.innerHTML = `<span class="text-cyan-400 font-bold">Checked Out at ${todayLog.out_time}</span>`;
+        } else if (todayLog.in_time) {
+          todayStatus.innerHTML = `<span class="text-emerald-400 font-bold">Currently Checked IN since ${todayLog.in_time}</span>`;
+        }
+      } else {
+        todayStatus.textContent = 'Status: Not checked in today yet.';
+      }
+
+      tbody.innerHTML = safeLogs.slice(0, 10).map(log => `
+        <tr class="hover:bg-gray-900/40">
+          <td class="py-3 px-2 font-medium text-gray-200">${Utils.formatDate(log.date)}</td>
+          <td class="py-3 px-2 text-emerald-400 font-semibold">${log.in_time || '--'}</td>
+          <td class="py-3 px-2 text-cyan-400 font-semibold">${log.out_time || 'Active'}</td>
+          <td class="py-3 px-2">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${log.status === 'COMPLETED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">
+              ${log.status || 'PRESENT'}
+            </span>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    loadDashboard();
+  </script>
+</body>
+</html>

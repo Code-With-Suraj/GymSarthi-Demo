@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gym Store Management — GymSarthi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <meta name="theme-color" content="#090D16">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="assets/logo.png">
+</head>
+<body class="bg-[#090D16] text-gray-100 min-h-screen">
+
+  <div class="flex">
+    <div id="sidebar-container"></div>
+
+    <div class="flex-1 lg:pl-64 flex flex-col min-h-screen">
+      <header class="h-20 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800 flex items-center justify-between px-6 sticky top-0 z-30">
+        <div class="flex items-center space-x-4">
+          <button id="mobile-menu-toggle" class="lg:hidden p-2 text-gray-400 hover:text-white rounded-lg">
+            ☰
+          </button>
+          <div>
+            <h1 class="text-xl font-bold text-white">Gym Supplement Store & Stock</h1>
+            <p class="text-xs text-gray-400">Feature 4: Sell supplements & gear in app</p>
+          </div>
+        </div>
+
+        <button id="add-prod-btn" onclick="openAddProductModal()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-gray-950 font-bold text-xs shadow hover:scale-[1.02] transition-all">
+          + Add New Product
+        </button>
+      </header>
+
+      <main class="p-6 space-y-6 flex-1">
+
+        <!-- GATING LOCKOVERLAY IF ON BASIC PLAN -->
+        <div id="gating-lock" class="glass-card p-10 rounded-3xl border-cyan-500/40 text-center space-y-6 max-w-xl mx-auto my-12 hidden">
+          <div class="w-20 h-20 rounded-3xl bg-cyan-500/10 border-2 border-cyan-500 flex items-center justify-center text-4xl mx-auto text-cyan-400 shadow-xl">
+            🔒
+          </div>
+          <div>
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">Basic Plan Active</span>
+            <h2 class="text-2xl font-black text-white mt-3">Gym Store Feature Locked</h2>
+            <p class="text-xs text-gray-400 mt-2 leading-relaxed">
+              Your gym is currently on the Basic Plan (₹499/mo or ₹4,999/yr). Upgrade to the <strong class="text-cyan-400">Pro Plan (₹799/mo or ₹7,999/yr)</strong> to unlock full Gym Supplement Store, Inventory Stock, and Sales Audit features.
+            </p>
+          </div>
+
+          <a href="owner-subscription.html" class="inline-flex items-center space-x-2 px-8 py-3.5 rounded-2xl font-black text-sm bg-gradient-to-r from-emerald-500 to-cyan-500 text-gray-950 shadow-xl hover:scale-105 transition-all">
+            <span>⚡ Upgrade to Pro Plan Now</span>
+          </a>
+        </div>
+
+        <!-- STORE CONTENT (VISIBLE ON PRO PLAN) -->
+        <div id="store-content" class="space-y-6">
+          <div class="glass-card rounded-3xl border-gray-800 overflow-hidden">
+            <div class="p-5 border-b border-gray-800 flex items-center justify-between">
+              <h3 class="font-bold text-white text-base">Store Products & Inventory</h3>
+              <span class="text-xs text-gray-400">Live Inventory Management</span>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-gray-900/90 text-gray-400 uppercase font-semibold border-b border-gray-800">
+                  <tr>
+                    <th class="py-3 px-4">Product Name</th>
+                    <th class="py-3 px-4">Category</th>
+                    <th class="py-3 px-4">Price</th>
+                    <th class="py-3 px-4">Stock</th>
+                    <th class="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="products-table-body" class="divide-y divide-gray-800/60 text-gray-300">
+                  <tr><td colspan="5" class="py-6 text-center text-gray-500">Loading store inventory...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Add Product Modal -->
+  <div id="prod-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+    <div class="glass-card max-w-md w-full p-6 rounded-3xl border-gray-800 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <h3 class="font-bold text-white text-base">Add Product to Gym Store</h3>
+        <button onclick="closeAddProductModal()" class="text-gray-400 hover:text-white">✕</button>
+      </div>
+
+      <form id="add-prod-form" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1">Product Name</label>
+          <input type="text" id="prod-name" required placeholder="e.g. Whey Protein Isolate" class="w-full px-3.5 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-xs">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 mb-1">Category</label>
+            <select id="prod-cat" class="w-full px-3.5 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-xs">
+              <option value="Supplements">Supplements</option>
+              <option value="Gear">Accessories & Gear</option>
+              <option value="Clothing">Gym Apparel</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 mb-1">Price (₹)</label>
+            <input type="number" id="prod-price" required placeholder="2499" class="w-full px-3.5 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-xs">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1">Available Stock Count</label>
+          <input type="number" id="prod-stock" required value="20" class="w-full px-3.5 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-xs">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1">Description</label>
+          <input type="text" id="prod-desc" placeholder="Product features" class="w-full px-3.5 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-xs">
+        </div>
+
+        <button type="submit" class="w-full py-3 rounded-xl font-bold text-xs bg-emerald-500 text-gray-950 mt-2">
+          Save Product to Store
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/pwa.js"></script>
+  <script src="js/owner-sidebar.js"></script>
+  <script>
+    Auth.requireAuth('OWNER');
+    OwnerSidebar.render('store');
+
+    async function checkPlanAndLoadStore() {
+      const lockOverlay = document.getElementById('store-lock-overlay');
+      const storeContent = document.getElementById('store-main-content');
+      const addBtn = document.getElementById('add-product-btn');
+      const tbody = document.getElementById('products-table-body');
+
+      try {
+        const storeData = await Api.getStorePageData(CONFIG.GYM_ID);
+        const sub = storeData.subscription || {};
+        const products = Array.isArray(storeData.products) ? storeData.products : [];
+
+        if (!sub.hasStore && !sub.hasActiveSubscription) {
+          lockOverlay.classList.remove('hidden');
+          storeContent.classList.add('hidden');
+          addBtn.classList.add('hidden');
+        } else {
+          lockOverlay.classList.add('hidden');
+          storeContent.classList.remove('hidden');
+          addBtn.classList.remove('hidden');
+
+          if (products.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-gray-500 text-sm">No products found in store. Click "Add New Product" to stock items.</td></tr>`;
+          } else {
+            tbody.innerHTML = products.map(p => `
+              <tr class="hover:bg-gray-900/40">
+                <td class="py-3.5 px-4 font-bold text-white">${p.name}</td>
+                <td class="py-3.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-400">${p.category || 'General'}</span></td>
+                <td class="py-3.5 px-4 font-bold text-emerald-400">₹${Number(p.price || 0).toLocaleString('en-IN')}</td>
+                <td class="py-3.5 px-4 font-semibold text-gray-300">${p.stock_quantity || p.stock || 0} units</td>
+                <td class="py-3.5 px-4 text-right">
+                  <button onclick="deleteProd('${p.product_id}')" class="text-rose-400 hover:text-rose-300 font-bold text-xs p-1">Delete</button>
+                </td>
+              </tr>
+            `).join('');
+          }
+        }
+      } catch (err) {
+        console.warn('Store page load error:', err);
+      }
+    }
+
+    async function deleteProd(prodId) {
+      if (!confirm('Are you sure you want to delete this product?')) return;
+      try {
+        await Api.deleteProduct(prodId);
+        Utils.showToast('Product deleted.', 'info');
+        checkPlanAndLoadStore();
+      } catch (err) {
+        Utils.showToast('Failed to delete product.', 'error');
+      }
+    }
+
+    function openAddProductModal() {
+      document.getElementById('prod-modal').classList.remove('hidden');
+    }
+
+    function closeAddProductModal() {
+      document.getElementById('prod-modal').classList.add('hidden');
+    }
+
+    document.getElementById('add-prod-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await Api.saveProduct({
+          gymId: CONFIG.GYM_ID,
+          name: document.getElementById('prod-name').value,
+          category: document.getElementById('prod-cat').value,
+          price: Number(document.getElementById('prod-price').value),
+          stock: Number(document.getElementById('prod-stock').value),
+          description: document.getElementById('prod-desc').value
+        });
+        Utils.showToast('Product added to Gym Store!', 'success');
+        closeAddProductModal();
+        checkPlanAndLoadStore();
+      } catch (err) {
+        Utils.showToast('Failed to add product.', 'error');
+      }
+    });
+
+    checkPlanAndLoadStore();
+  </script>
+</body>
+</html>

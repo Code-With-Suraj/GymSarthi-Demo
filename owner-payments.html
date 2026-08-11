@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Audit — GymSarthi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <meta name="theme-color" content="#090D16">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="assets/logo.png">
+</head>
+<body class="bg-[#090D16] text-gray-100 min-h-screen">
+
+  <div class="flex">
+    <div id="sidebar-container"></div>
+
+    <div class="flex-1 lg:pl-64 flex flex-col min-h-screen">
+      <header class="h-20 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800 flex items-center justify-between px-6 sticky top-0 z-30">
+        <div class="flex items-center space-x-4">
+          <button id="mobile-menu-toggle" class="lg:hidden p-2 text-gray-400 hover:text-white rounded-lg">
+            ☰
+          </button>
+          <div>
+            <h1 class="text-xl font-bold text-white">Gym Revenue & Payments Audit</h1>
+            <p class="text-xs text-gray-400">Cash Settlement & Razorpay Transaction Log</p>
+          </div>
+        </div>
+      </header>
+
+      <main class="p-6 space-y-6 flex-1">
+        <!-- Summary KPI Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div class="glass-card p-5 rounded-2xl border-gray-800">
+            <p class="text-xs font-bold text-gray-400 uppercase">Total Revenue Collected</p>
+            <p id="kpi-total-rev" class="text-2xl font-black text-emerald-400 mt-1">₹0</p>
+          </div>
+          <div class="glass-card p-5 rounded-2xl border-amber-500/30 bg-amber-950/10">
+            <p class="text-xs font-bold text-amber-400 uppercase">Pending Cash Collections</p>
+            <p id="kpi-pending-cash" class="text-2xl font-black text-amber-400 mt-1">₹0</p>
+          </div>
+          <div class="glass-card p-5 rounded-2xl border-cyan-500/30 bg-cyan-950/10">
+            <p class="text-xs font-bold text-cyan-400 uppercase">Online Razorpay Sales</p>
+            <p id="kpi-online-sales" class="text-2xl font-black text-cyan-400 mt-1">₹0</p>
+          </div>
+        </div>
+
+        <div class="glass-card rounded-3xl border-gray-800 overflow-hidden">
+          <div class="p-5 border-b border-gray-800 flex items-center justify-between">
+            <div>
+              <h3 class="font-bold text-white text-base">Payment Transactions Audit</h3>
+              <p class="text-xs text-gray-400">Mark pending cash collections as paid with 1 click</p>
+            </div>
+            <span class="text-xs px-3 py-1 rounded-full bg-gray-800 text-gray-300 font-medium">Real-time Sync</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-gray-900/90 text-gray-400 uppercase font-semibold border-b border-gray-800">
+                <tr>
+                  <th class="py-3 px-4">Payment ID</th>
+                  <th class="py-3 px-4">Member Name</th>
+                  <th class="py-3 px-4">Type & Purpose</th>
+                  <th class="py-3 px-4">Amount</th>
+                  <th class="py-3 px-4">Mode</th>
+                  <th class="py-3 px-4">Status & Settlement</th>
+                  <th class="py-3 px-4 text-right">Date & Time</th>
+                </tr>
+              </thead>
+              <tbody id="payments-table-body" class="divide-y divide-gray-800/60 text-gray-300">
+                <tr><td colspan="7" class="py-6 text-center text-gray-500">Loading payment audit log...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Mark Paid Confirmation Modal -->
+  <div id="mark-paid-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+    <div class="glass-card max-w-sm w-full p-6 rounded-3xl border-emerald-500/40 shadow-2xl space-y-4 text-center">
+      <div class="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-2xl mx-auto">
+        💵
+      </div>
+      <div>
+        <h3 class="font-extrabold text-white text-lg">Mark Cash as Paid?</h3>
+        <p class="text-xs text-gray-400 mt-1">Confirm that cash payment has been received for <span id="modal-member-name" class="text-emerald-400 font-bold"></span>.</p>
+      </div>
+
+      <div class="flex items-center space-x-3 pt-2">
+        <button onclick="closeMarkPaidModal()" class="flex-1 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-xs">
+          Cancel
+        </button>
+        <button id="confirm-mark-paid-btn" class="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-black text-xs shadow-lg">
+          Yes, Mark Paid
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/pwa.js"></script>
+  <script src="js/owner-sidebar.js"></script>
+  <script>
+    Auth.requireAuth('OWNER');
+    OwnerSidebar.render('payments');
+
+    let currentSelectedPaymentId = null;
+
+    async function loadPayments() {
+      const tbody = document.getElementById('payments-table-body');
+      try {
+        const rawPayments = await Api.getPayments(CONFIG.GYM_ID);
+        const payments = Array.isArray(rawPayments) ? rawPayments : [];
+
+        // Update KPIs
+        const totalRev = payments.filter(p => p.status === 'SUCCESS' || p.status === 'COMPLETED' || p.status === 'PAID').reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+        const pendingCash = payments.filter(p => p.status === 'PENDING_CASH' || p.status === 'PENDING' || p.status === 'UNPAID').reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+        const onlineSales = payments.filter(p => p.payment_method === 'ONLINE' && (p.status === 'SUCCESS' || p.status === 'COMPLETED')).reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+
+        document.getElementById('kpi-total-rev').textContent = `₹${totalRev.toLocaleString('en-IN')}`;
+        document.getElementById('kpi-pending-cash').textContent = `₹${pendingCash.toLocaleString('en-IN')}`;
+        document.getElementById('kpi-online-sales').textContent = `₹${onlineSales.toLocaleString('en-IN')}`;
+
+        tbody.innerHTML = payments.map(p => {
+          const isPending = p.status === 'PENDING' || p.status === 'PENDING_CASH' || p.status === 'UNPAID';
+          const isOnline = p.payment_method === 'ONLINE';
+          const purpose = p.payment_type ? `${p.payment_type} — ${p.reference_id || 'Fee'}` : (p.purpose || 'Gym Membership');
+
+          return `
+            <tr class="hover:bg-gray-900/40">
+              <td class="py-3.5 px-4 font-mono text-[11px] text-gray-400">${p.payment_id}</td>
+              <td class="py-3.5 px-4 font-bold text-white">${p.member_name || 'Member'}</td>
+              <td class="py-3.5 px-4 text-gray-300 text-xs">${purpose}</td>
+              <td class="py-3.5 px-4 font-black text-emerald-400">₹${Number(p.amount).toLocaleString('en-IN')}</td>
+              <td class="py-3.5 px-4">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isOnline ? 'bg-cyan-500/20 text-cyan-400' : 'bg-amber-500/20 text-amber-400'}">
+                  ${isOnline ? '💳 Razorpay' : '💵 Cash'}
+                </span>
+              </td>
+              <td class="py-3.5 px-4">
+                ${isPending ? `
+                  <div class="flex items-center space-x-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                      ⚠️ CASH PENDING
+                    </span>
+                    <button onclick="confirmMarkAsPaid('${p.payment_id}', '${(p.member_name || 'Member').replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-black text-[11px] transition-all shadow flex items-center space-x-1">
+                      <span>💵 Mark Paid</span>
+                    </button>
+                  </div>
+                ` : `
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    ✅ COMPLETED
+                  </span>
+                `}
+              </td>
+              <td class="py-3.5 px-4 text-right text-gray-500 text-xs">${Utils.formatDate(p.created_at)}</td>
+            </tr>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.warn('Payments load error:', err);
+      }
+    }
+
+    function confirmMarkAsPaid(paymentId, memberName) {
+      currentSelectedPaymentId = paymentId;
+      document.getElementById('modal-member-name').textContent = memberName;
+      document.getElementById('mark-paid-modal').classList.remove('hidden');
+    }
+
+    function closeMarkPaidModal() {
+      document.getElementById('mark-paid-modal').classList.add('hidden');
+      currentSelectedPaymentId = null;
+    }
+
+    document.getElementById('confirm-mark-paid-btn').addEventListener('click', async () => {
+      if (!currentSelectedPaymentId) return;
+      try {
+        await Api.markPaymentAsPaid(currentSelectedPaymentId, CONFIG.GYM_ID);
+        Utils.showToast('Payment marked as PAID successfully!', 'success');
+        closeMarkPaidModal();
+        loadPayments();
+      } catch (err) {
+        Utils.showToast(err.message || 'Failed to mark payment as paid.', 'error');
+      }
+    });
+
+    loadPayments();
+  </script>
+</body>
+</html>

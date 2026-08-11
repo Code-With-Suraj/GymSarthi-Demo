@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GymSarthi — Gym Member Retention & Management System</title>
+  <meta name="description" content="Solve gym member retention, gate QR attendance, self-onboarding, and gym store sales with GymSarthi.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <meta name="theme-color" content="#090D16">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="assets/logo.png">
+</head>
+<body class="bg-[#090D16] text-gray-100 min-h-screen flex flex-col justify-between">
+
+  <!-- Header / Navigation -->
+  <header class="sticky top-0 z-50 backdrop-blur-xl bg-[#090D16]/80 border-b border-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <img src="assets/logo.png" alt="GymSarthi Logo" class="w-11 h-11 rounded-2xl object-cover shadow-lg shadow-emerald-500/20 border border-emerald-500/30">
+        <div>
+          <span class="text-2xl font-black tracking-tight text-white">Gym<span class="gradient-text-emerald">Sarthi</span></span>
+          <span class="hidden sm:inline-block ml-2 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Retention Engine</span>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3 sm:space-x-4">
+        <button onclick="PWA.install()" class="pwa-install-btn px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-400 border border-emerald-500/40 font-bold text-xs flex items-center space-x-1.5 hover:bg-emerald-500/30 transition-all pwa-install-trigger">
+          <span>📱 Install App</span>
+        </button>
+        <a href="login.html" class="px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-xl font-semibold text-xs sm:text-sm text-gray-300 hover:text-white hover:bg-gray-800 transition-all">
+          Log In
+        </a>
+        <a href="register.html" class="px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-emerald-500 to-cyan-500 text-gray-950 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02] transition-all">
+          Join Gym
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="flex-1">
+    <section class="relative py-20 lg:py-28 overflow-hidden">
+      <!-- Glow Orbs -->
+      <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none"></div>
+      <div class="absolute bottom-10 right-10 w-80 h-80 bg-cyan-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+        <div class="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-8">
+          <span>🔥 Ultimate Gym Retention & Attendance Solution</span>
+        </div>
+
+        <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-4xl mx-auto leading-tight">
+          Stop Member Dropouts.<br>
+          <span class="gradient-text-emerald">Retain Every Gym Member.</span>
+        </h1>
+
+        <p class="mt-6 text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto font-normal">
+          Automated 3-day absence alerts with 1-click calls, seamless Gate QR scanner check-in, self-onboarding payments, and in-app supplement store.
+        </p>
+
+        <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a href="register.html" class="w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-base bg-gradient-to-r from-emerald-500 to-cyan-500 text-gray-950 shadow-xl shadow-emerald-500/30 hover:scale-105 transition-all flex items-center justify-center space-x-2">
+            <span>Member Self Onboarding</span>
+            <span>➔</span>
+          </a>
+          <a href="login.html?role=owner" class="w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-base bg-gray-900 border border-gray-700 text-gray-200 hover:bg-gray-800 hover:border-emerald-500/50 transition-all flex items-center justify-center space-x-2">
+            <span>👑 Gym Owner Portal</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Key Features Grid -->
+    <section class="py-16 bg-gray-950/60 border-t border-b border-gray-800/80">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl font-extrabold text-white sm:text-4xl">Built to Solve Gym Retention Challenges</h2>
+          <p class="mt-3 text-gray-400">Everything your gym needs to keep members active and grow revenue.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Feature 1 -->
+          <div class="glass-card glass-card-hover p-6 rounded-2xl">
+            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-2xl mb-4">
+              📝
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">1. Self Onboarding</h3>
+            <p class="text-sm text-gray-400">Members select membership packages and pay via Online (Razorpay) or Cash instantly.</p>
+          </div>
+
+          <!-- Feature 2 -->
+          <div class="glass-card glass-card-hover p-6 rounded-2xl border-rose-500/30">
+            <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-2xl mb-4">
+              📞
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">2. 3-Day Inactive Call Alert</h3>
+            <p class="text-sm text-gray-400">App automatically detects members missing for 3+ days with 1-click instant call trigger.</p>
+          </div>
+
+          <!-- Feature 3 -->
+          <div class="glass-card glass-card-hover p-6 rounded-2xl">
+            <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-2xl mb-4">
+              📱
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">3. Gate QR Attendance</h3>
+            <p class="text-sm text-gray-400">Scan QR code at gym gate to punch Check-In, scan again while leaving for Check-Out.</p>
+          </div>
+
+          <!-- Feature 4 -->
+          <div class="glass-card glass-card-hover p-6 rounded-2xl">
+            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-2xl mb-4">
+              🛒
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">4. Gym Supplement Store</h3>
+            <p class="text-sm text-gray-400">Sell whey protein, shakers & gear directly inside the app with cash or online checkout.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing Tiers Preview -->
+    <section class="py-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+          <span class="text-emerald-400 text-xs font-bold uppercase tracking-widest">SaaS Subscription Plans</span>
+          <h2 class="text-3xl font-extrabold text-white sm:text-4xl mt-2">Transparent Pricing for Gym Owners</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Basic Monthly -->
+          <div class="glass-card p-6 rounded-2xl border-gray-800 flex flex-col justify-between">
+            <div>
+              <span class="px-3 py-1 rounded-full text-xs font-bold bg-gray-800 text-gray-300">Basic Monthly</span>
+              <div class="mt-4 flex items-baseline">
+                <span class="text-4xl font-black text-white">₹499</span>
+                <span class="text-gray-400 text-sm ml-2">/month</span>
+              </div>
+              <ul class="mt-6 space-y-3 text-sm text-gray-300">
+                <li class="flex items-center">✅ Self Onboarding</li>
+                <li class="flex items-center">✅ QR Gate Attendance</li>
+                <li class="flex items-center">✅ 3-Day Call Alerts</li>
+                <li class="flex items-center text-gray-500">❌ Gym Store Feature</li>
+              </ul>
+            </div>
+            <a href="login.html?role=owner" class="mt-8 w-full py-3 rounded-xl bg-gray-800 hover:bg-gray-700 font-bold text-sm text-center transition-colors">Start Basic</a>
+          </div>
+
+          <!-- Basic Yearly -->
+          <div class="glass-card p-6 rounded-2xl border-emerald-500/40 relative flex flex-col justify-between">
+            <div>
+              <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Save ₹989</span>
+              <div class="mt-4 flex items-baseline">
+                <span class="text-4xl font-black text-white">₹4999</span>
+                <span class="text-gray-400 text-sm ml-2">/year</span>
+              </div>
+              <ul class="mt-6 space-y-3 text-sm text-gray-300">
+                <li class="flex items-center">✅ All Basic Features</li>
+                <li class="flex items-center">✅ 1 Full Year Access</li>
+                <li class="flex items-center">✅ Phone Support</li>
+                <li class="flex items-center text-gray-500">❌ Gym Store Feature</li>
+              </ul>
+            </div>
+            <a href="login.html?role=owner" class="mt-8 w-full py-3 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 font-bold text-sm text-center transition-colors">Get Basic Annual</a>
+          </div>
+
+          <!-- Pro Monthly -->
+          <div class="glass-card p-6 rounded-2xl border-cyan-500/40 flex flex-col justify-between">
+            <div>
+              <span class="px-3 py-1 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">Pro Monthly</span>
+              <div class="mt-4 flex items-baseline">
+                <span class="text-4xl font-black text-white">₹799</span>
+                <span class="text-gray-400 text-sm ml-2">/month</span>
+              </div>
+              <ul class="mt-6 space-y-3 text-sm text-gray-300">
+                <li class="flex items-center">✅ All Basic Features</li>
+                <li class="flex items-center">✅ <strong class="text-cyan-400 ml-1">Gym Supplement Store</strong></li>
+                <li class="flex items-center">✅ Stock & Sales Audit</li>
+                <li class="flex items-center">✅ Priority Support</li>
+              </ul>
+            </div>
+            <a href="login.html?role=owner" class="mt-8 w-full py-3 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30 font-bold text-sm text-center transition-colors">Get Pro Monthly</a>
+          </div>
+
+          <!-- Pro Yearly -->
+          <div class="glass-card p-6 rounded-2xl border-emerald-500 bg-gradient-to-b from-emerald-950/30 to-gray-900 shadow-xl shadow-emerald-500/10 flex flex-col justify-between relative overflow-hidden">
+            <div class="absolute top-0 right-0 bg-emerald-500 text-gray-950 text-[10px] font-black uppercase px-3 py-1 rounded-bl-xl">POPULAR ⭐</div>
+            <div>
+              <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500 text-gray-950">Pro Annual (Full Suite)</span>
+              <div class="mt-4 flex items-baseline">
+                <span class="text-4xl font-black text-white">₹7999</span>
+                <span class="text-gray-400 text-sm ml-2">/year</span>
+              </div>
+              <ul class="mt-6 space-y-3 text-sm text-gray-200">
+                <li class="flex items-center">✅ All Features Unlocked</li>
+                <li class="flex items-center">✅ Gym Store & Inventory</li>
+                <li class="flex items-center">✅ Save ₹1589 / Year</li>
+                <li class="flex items-center">✅ Dedicated Account Manager</li>
+              </ul>
+            </div>
+            <a href="login.html?role=owner" class="mt-8 w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-gray-950 font-extrabold text-sm text-center shadow-lg hover:scale-[1.02] transition-transform">Get Pro Annual</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-gray-800 py-8 bg-gray-950 text-center text-xs text-gray-500">
+    <div class="max-w-7xl mx-auto px-4">
+      <p>© 2026 GymSarthi Automation System. Powered by Google Apps Script REST API & Google Sheets Database.</p>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/pwa.js"></script>
+  <script>
+    // Auto redirect if already logged in
+    Auth.redirectIfLoggedIn();
+  </script>
+</body>
+</html>

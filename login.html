@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log In — GymSarthi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <meta name="theme-color" content="#090D16">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="assets/logo.png">
+</head>
+<body class="bg-[#090D16] text-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+
+  <div class="w-full max-w-md">
+    <!-- Mobile PWA Install Banner -->
+    <div class="mb-4 text-center">
+      <button onclick="PWA.install()" class="pwa-install-btn px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-400 border border-emerald-500/40 font-bold text-xs inline-flex items-center space-x-2 hover:bg-emerald-500/30 transition-all pwa-install-trigger">
+        <span>📱 Install GymSarthi App on Phone</span>
+      </button>
+    </div>
+
+    <!-- Brand Logo Header -->
+    <div class="text-center mb-8">
+      <a href="index.html" class="inline-flex items-center space-x-3 group">
+        <img src="assets/logo.png" alt="GymSarthi Logo" class="w-12 h-12 rounded-2xl object-cover shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform border border-emerald-500/30">
+        <div class="text-left">
+          <span class="text-2xl font-black tracking-tight text-white">Gym<span class="gradient-text-emerald">Sarthi</span></span>
+          <p class="text-xs text-gray-400">Gym Member Retention System</p>
+        </div>
+      </a>
+    </div>
+
+    <!-- Login Card -->
+    <div class="glass-card p-8 rounded-3xl border-gray-800 shadow-2xl relative overflow-hidden">
+      <!-- Glow background -->
+      <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl pointer-events-none"></div>
+
+      <!-- Role Selector Tabs -->
+      <div class="flex rounded-xl bg-gray-900/80 p-1 mb-6 border border-gray-800">
+        <button id="tab-member" class="flex-1 py-2.5 rounded-lg font-bold text-xs transition-all bg-emerald-500 text-gray-950 shadow">
+          Member Login
+        </button>
+        <button id="tab-owner" class="flex-1 py-2.5 rounded-lg font-bold text-xs text-gray-400 hover:text-white transition-all">
+          👑 Gym Owner Login
+        </button>
+      </div>
+
+      <form id="login-form" class="space-y-5">
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Mobile Number</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-500 font-bold text-sm">+91</span>
+            <input type="tel" id="mobile" required maxlength="10" placeholder="9876543210"
+              class="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-900/90 border border-gray-700 text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-sm font-medium">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Password</label>
+          <input type="password" id="password" required placeholder="••••••••"
+            class="w-full px-4 py-3 rounded-xl bg-gray-900/90 border border-gray-700 text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-sm font-medium">
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="submit-btn"
+          class="w-full py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-emerald-500 to-cyan-500 text-gray-950 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center space-x-2">
+          <span>Log In</span>
+          <span>➔</span>
+        </button>
+      </form>
+
+
+
+      <!-- Registration Redirect -->
+      <div class="mt-6 text-center text-xs text-gray-400">
+        New Member? <a href="register.html" class="text-emerald-400 font-bold hover:underline">Self Onboard Here</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/pwa.js"></script>
+  <script>
+    // Auto redirect if already logged in
+    Auth.redirectIfLoggedIn();
+
+    let currentRole = 'MEMBER';
+
+    // Role Tab Switchers
+    const tabMember = document.getElementById('tab-member');
+    const tabOwner = document.getElementById('tab-owner');
+    const mobileInput = document.getElementById('mobile');
+    const passInput = document.getElementById('password');
+
+    // Check URL query param for default role
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('role') === 'owner') {
+      switchToOwner();
+    }
+
+    tabMember.addEventListener('click', switchToMember);
+    tabOwner.addEventListener('click', switchToOwner);
+
+    function switchToMember() {
+      currentRole = 'MEMBER';
+      tabMember.className = 'flex-1 py-2.5 rounded-lg font-bold text-xs transition-all bg-emerald-500 text-gray-950 shadow';
+      tabOwner.className = 'flex-1 py-2.5 rounded-lg font-bold text-xs text-gray-400 hover:text-white transition-all';
+    }
+
+    function switchToOwner() {
+      currentRole = 'OWNER';
+      tabOwner.className = 'flex-1 py-2.5 rounded-lg font-bold text-xs transition-all bg-cyan-500 text-gray-950 shadow';
+      tabMember.className = 'flex-1 py-2.5 rounded-lg font-bold text-xs text-gray-400 hover:text-white transition-all';
+    }
+
+
+
+    // Form Submission
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById('submit-btn');
+      const mobile = mobileInput.value.trim();
+      const password = passInput.value.trim();
+
+      if (mobile.length !== 10) {
+        Utils.showToast('Please enter a valid 10-digit mobile number.', 'error');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<span>Signing in...</span>`;
+
+      try {
+        const res = await Api.login(mobile, password);
+        Auth.setSession(res.token, res.user);
+
+        Utils.showToast(`Welcome back, ${res.user.name}!`, 'success');
+
+        setTimeout(() => {
+          if (res.user.role === 'OWNER') {
+            window.location.href = 'owner-dashboard.html';
+          } else {
+            window.location.href = 'member-dashboard.html';
+          }
+        }, 500);
+
+      } catch (err) {
+        Utils.showToast(err.message || 'Login failed. Please check credentials.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<span>Log In</span><span>➔</span>`;
+      }
+    });
+  </script>
+</body>
+</html>
