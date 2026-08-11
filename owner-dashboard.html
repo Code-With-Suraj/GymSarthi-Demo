@@ -232,6 +232,10 @@
           <button id="tab-btn-overview" onclick="switchDashboardTab('overview')" class="py-3 px-4 font-bold text-xs sm:text-sm border-b-2 border-emerald-500 text-emerald-400 flex items-center space-x-2 whitespace-nowrap">
             <span>📊 Overview & Analytics</span>
           </button>
+          <button id="tab-btn-attendance" onclick="switchDashboardTab('attendance')" class="py-3 px-4 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap">
+            <span>📋 Gate Attendance Logs</span>
+            <span id="badge-attendance-today-count" class="px-2 py-0.5 rounded-full text-[10px] bg-cyan-500/20 text-cyan-400">0 Today</span>
+          </button>
           <button id="tab-btn-active" onclick="switchDashboardTab('active')" class="py-3 px-4 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap">
             <span>🟢 Active Members</span>
             <span id="badge-active-count" class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-400">0</span>
@@ -270,13 +274,36 @@
               </button>
             </div>
 
-            <!-- Inactive Members Retention Alert Preview Table -->
+            <!-- Today's Live Gate Attendance Pulse Feed -->
             <div class="glass-card p-6 rounded-3xl border-gray-800 lg:col-span-2 space-y-4">
               <div class="flex items-center justify-between">
-                <h3 class="font-bold text-white text-sm flex items-center space-x-2">
-                  <span class="text-rose-400">📞 Leave Members Requiring Phone Followup</span>
-                </h3>
-                <button onclick="switchDashboardTab('leave')" class="text-xs text-emerald-400 font-bold hover:underline">View All Leave Members ➔</button>
+                <div>
+                  <h3 class="font-bold text-white text-sm flex items-center space-x-2">
+                    <span>⚡ Today's Live Gate Attendance</span>
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                  </h3>
+                  <p class="text-[11px] text-gray-400 mt-0.5">Real-time member gate punch feed</p>
+                </div>
+                <button onclick="switchDashboardTab('attendance')" class="text-xs text-cyan-400 font-bold hover:underline flex items-center space-x-1">
+                  <span>View All Logs</span>
+                  <span>➔</span>
+                </button>
+              </div>
+
+              <!-- Quick Mini-Stat Pills -->
+              <div class="grid grid-cols-3 gap-2.5 p-3 rounded-2xl bg-gray-950/70 border border-gray-800">
+                <div class="text-center">
+                  <span class="text-[10px] uppercase font-bold text-gray-400 block">Today Visits</span>
+                  <span id="overview-att-today-count" class="text-base sm:text-lg font-black text-emerald-400">0</span>
+                </div>
+                <div class="text-center border-x border-gray-800">
+                  <span class="text-[10px] uppercase font-bold text-amber-400 block">Inside Gym</span>
+                  <span id="overview-att-inside-count" class="text-base sm:text-lg font-black text-amber-400">0</span>
+                </div>
+                <div class="text-center">
+                  <span class="text-[10px] uppercase font-bold text-cyan-400 block">Avg Duration</span>
+                  <span id="overview-att-avg-mins" class="text-base sm:text-lg font-black text-cyan-400">0m</span>
+                </div>
               </div>
 
               <div class="overflow-x-auto">
@@ -284,18 +311,107 @@
                   <thead>
                     <tr class="border-b border-gray-800 text-gray-400 uppercase font-semibold">
                       <th class="py-2.5 px-2">Member</th>
-                      <th class="py-2.5 px-2">Absence / Expiry</th>
-                      <th class="py-2.5 px-2">Last Attendance</th>
-                      <th class="py-2.5 px-2 text-right">Action</th>
+                      <th class="py-2.5 px-2">In Time</th>
+                      <th class="py-2.5 px-2">Out Time</th>
+                      <th class="py-2.5 px-2 text-right">Status</th>
                     </tr>
                   </thead>
-                  <tbody id="overview-leave-preview" class="divide-y divide-gray-800/60 text-gray-300">
-                    <tr><td colspan="4" class="py-4 text-center text-gray-500">Checking attendance logs...</td></tr>
+                  <tbody id="overview-attendance-preview" class="divide-y divide-gray-800/60 text-gray-300">
+                    <tr><td colspan="4" class="py-4 text-center text-gray-500">Checking today's gate check-in logs...</td></tr>
                   </tbody>
                 </table>
               </div>
             </div>
 
+          </div>
+
+          <!-- Inactive Members Retention Alert Preview Table (Full Width) -->
+          <div class="glass-card p-6 rounded-3xl border-gray-800 space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold text-white text-sm flex items-center space-x-2">
+                <span class="text-rose-400">📞 Leave Members Requiring Phone Followup (3+ Days Absent)</span>
+              </h3>
+              <button onclick="switchDashboardTab('leave')" class="text-xs text-rose-400 font-bold hover:underline">View All Leave Members ➔</button>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="border-b border-gray-800 text-gray-400 uppercase font-semibold">
+                    <th class="py-2.5 px-2">Member</th>
+                    <th class="py-2.5 px-2">Absence / Expiry</th>
+                    <th class="py-2.5 px-2">Last Attendance</th>
+                    <th class="py-2.5 px-2 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="overview-leave-preview" class="divide-y divide-gray-800/60 text-gray-300">
+                  <tr><td colspan="4" class="py-4 text-center text-gray-500">Checking attendance logs...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: LIVE GATE ATTENDANCE LOGS DEDICATED VIEW -->
+        <div id="dash-section-attendance" class="space-y-4 hidden">
+          <!-- Top Stat Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="glass-card p-4 rounded-2xl border-emerald-500/30 bg-emerald-950/10">
+              <span class="text-xs text-gray-400 font-bold uppercase">Total Today Punches</span>
+              <p id="att-stat-today-total" class="text-2xl font-black text-emerald-400 mt-1">0</p>
+              <p class="text-[11px] text-gray-500 mt-0.5">Gate entries recorded today</p>
+            </div>
+            <div class="glass-card p-4 rounded-2xl border-amber-500/30 bg-amber-950/10">
+              <span class="text-xs text-amber-400 font-bold uppercase">Currently Inside Gym</span>
+              <p id="att-stat-currently-inside" class="text-2xl font-black text-amber-400 mt-1">0</p>
+              <p class="text-[11px] text-gray-500 mt-0.5">Active workout sessions</p>
+            </div>
+            <div class="glass-card p-4 rounded-2xl border-cyan-500/30 bg-cyan-950/10">
+              <span class="text-xs text-cyan-400 font-bold uppercase">Avg Session Duration</span>
+              <p id="att-stat-avg-duration" class="text-2xl font-black text-cyan-400 mt-1">0 mins</p>
+              <p class="text-[11px] text-gray-500 mt-0.5">Completed workouts today</p>
+            </div>
+          </div>
+
+          <!-- Search & Filter Bar -->
+          <div class="glass-card p-4 rounded-2xl border-gray-800 flex flex-wrap items-center justify-between gap-3">
+            <div class="relative flex-1 min-w-[240px]">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 text-sm">🔍</span>
+              <input
+                type="text"
+                id="att-search-input"
+                oninput="filterAttendanceLogs(this.value)"
+                placeholder="Search member name or ID..."
+                class="w-full pl-9 pr-4 py-2 bg-gray-950 border border-gray-800 rounded-xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+              >
+            </div>
+            <div class="flex items-center space-x-2" id="attendance-filter-buttons">
+              <button onclick="setAttendanceFilter('ALL')" id="att-filter-all" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-500 text-gray-950 transition shadow-sm">All Logs</button>
+              <button onclick="setAttendanceFilter('TODAY')" id="att-filter-today" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-gray-900 border border-gray-800 text-gray-400 hover:text-white transition">Today Only</button>
+              <button onclick="setAttendanceFilter('ACTIVE')" id="att-filter-active" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-gray-900 border border-gray-800 text-gray-400 hover:text-white transition">Inside Gym</button>
+            </div>
+          </div>
+
+          <!-- Attendance Table -->
+          <div class="glass-card rounded-3xl border-gray-800 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-gray-900/90 text-gray-400 uppercase font-semibold border-b border-gray-800">
+                  <tr>
+                    <th class="py-3 px-4">Member Name</th>
+                    <th class="py-3 px-4">Date</th>
+                    <th class="py-3 px-4">Check-In</th>
+                    <th class="py-3 px-4">Check-Out</th>
+                    <th class="py-3 px-4">Duration</th>
+                    <th class="py-3 px-4 text-center">Status</th>
+                    <th class="py-3 px-4 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="attendance-logs-table" class="divide-y divide-gray-800/60 text-gray-300">
+                  <tr><td colspan="7" class="py-6 text-center text-gray-500">Loading gate attendance logs...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -389,8 +505,11 @@
     let globalPayments = [];
     let globalExpenses = [];
     let globalPackages = [];
+    let globalAttendance = [];
     let globalSubscription = null;
     let globalPlans = [];
+    let currentAttFilter = 'ALL';
+    let currentAttSearch = '';
 
     async function loadDashboardMetrics(forceRefresh = false) {
       try {
@@ -401,6 +520,7 @@
           globalPayments = Array.isArray(dashData.payments) ? dashData.payments : [];
           globalExpenses = Array.isArray(dashData.expenses) ? dashData.expenses : [];
           globalPackages = Array.isArray(dashData.packages) ? dashData.packages : [];
+          globalAttendance = Array.isArray(dashData.attendance) ? dashData.attendance : [];
           globalSubscription = dashData.subscription || null;
           globalPlans = Array.isArray(dashData.plans) ? dashData.plans : [];
 
@@ -412,9 +532,20 @@
           // Process SaaS Subscription status & financial metrics
           handleSubscriptionState(globalSubscription, globalPlans);
           calculateFinancials();
+          renderAttendanceWidgets();
           renderActiveMembersTable();
           renderLeaveMembersTable();
           renderPackagesGrid();
+
+          // If attendance logs were not in batch, fetch in background without blocking
+          if (globalAttendance.length === 0) {
+            Api.getAttendance(CONFIG.GYM_ID).then(logs => {
+              if (Array.isArray(logs) && logs.length > 0) {
+                globalAttendance = logs;
+                renderAttendanceWidgets();
+              }
+            }).catch(() => {});
+          }
         };
 
         // Fetch raw batch data in single API call with Stale-While-Revalidate
@@ -805,8 +936,164 @@
       }).join('');
     }
 
+    function renderAttendanceWidgets() {
+      const today = new Date();
+      const todayYMD = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+      const todayLogs = globalAttendance.filter(a => {
+        const dStr = (a.date && typeof a.date === 'string' && a.date.includes('T')) ? a.date.split('T')[0] : String(a.date || '').substring(0, 10);
+        return dStr === todayYMD;
+      });
+
+      const currentlyInside = todayLogs.filter(a => !a.check_out_time || a.out_time === 'Active' || a.status === 'CHECKED_IN');
+      const completedToday = todayLogs.filter(a => a.status === 'COMPLETED' || (a.check_out_time && a.check_out_time !== 'Active' && a.check_out_time !== '--'));
+
+      let avgMins = 0;
+      if (completedToday.length > 0) {
+        const totalDuration = completedToday.reduce((acc, a) => acc + (Number(a.duration_minutes) || 0), 0);
+        avgMins = Math.round(totalDuration / completedToday.length);
+      }
+
+      // Update Overview summary pills & badges
+      Utils.setElementText('badge-attendance-today-count', `${todayLogs.length} Today`);
+      Utils.setElementText('overview-att-today-count', todayLogs.length);
+      Utils.setElementText('overview-att-inside-count', currentlyInside.length);
+      Utils.setElementText('overview-att-avg-mins', `${avgMins}m`);
+
+      Utils.setElementText('att-stat-today-total', todayLogs.length);
+      Utils.setElementText('att-stat-currently-inside', currentlyInside.length);
+      Utils.setElementText('att-stat-avg-duration', `${avgMins} mins`);
+
+      // Render Overview Live Attendance Preview (Latest 5 logs)
+      const overviewTbody = document.getElementById('overview-attendance-preview');
+      if (overviewTbody) {
+        const previewLogs = (todayLogs.length > 0 ? todayLogs : globalAttendance).slice(0, 5);
+        if (previewLogs.length === 0) {
+          overviewTbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-gray-500">No gate check-in logs recorded yet. Members can scan QR at gym entrance.</td></tr>`;
+        } else {
+          overviewTbody.innerHTML = previewLogs.map(a => {
+            const inT = a.check_in_time || a.in_time || '--';
+            const outT = a.check_out_time || a.out_time || (a.status === 'CHECKED_IN' ? 'Active' : '--');
+            const isInside = a.status === 'CHECKED_IN' || outT === 'Active';
+            return `
+              <tr class="hover:bg-gray-900/40">
+                <td class="py-2.5 px-2 font-bold text-white">
+                  <div>${a.member_name || 'Member'}</div>
+                  <div class="text-[10px] text-gray-500 font-mono">${a.member_id || ''}</div>
+                </td>
+                <td class="py-2.5 px-2 text-emerald-400 font-semibold">${inT}</td>
+                <td class="py-2.5 px-2 ${isInside ? 'text-amber-400' : 'text-cyan-400'} font-semibold">
+                  ${isInside ? '<span class="inline-flex items-center space-x-1"><span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span><span>Inside</span></span>' : outT}
+                </td>
+                <td class="py-2.5 px-2 text-right">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isInside ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}">
+                    ${isInside ? 'INSIDE' : 'COMPLETED'}
+                  </span>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      renderAttendanceTable();
+    }
+
+    function renderAttendanceTable() {
+      const tbody = document.getElementById('attendance-logs-table');
+      if (!tbody) return;
+
+      const today = new Date();
+      const todayYMD = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+      let logs = [...globalAttendance];
+
+      if (currentAttFilter === 'TODAY') {
+        logs = logs.filter(a => {
+          const dStr = (a.date && typeof a.date === 'string' && a.date.includes('T')) ? a.date.split('T')[0] : String(a.date || '').substring(0, 10);
+          return dStr === todayYMD;
+        });
+      } else if (currentAttFilter === 'ACTIVE') {
+        logs = logs.filter(a => a.status === 'CHECKED_IN' || a.out_time === 'Active' || !a.check_out_time);
+      }
+
+      if (currentAttSearch.trim()) {
+        const q = currentAttSearch.trim().toLowerCase();
+        logs = logs.filter(a => String(a.member_name || '').toLowerCase().includes(q) || String(a.member_id || '').toLowerCase().includes(q));
+      }
+
+      if (logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-gray-500">No attendance logs matching filter criteria.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = logs.slice(0, 50).map(a => {
+        const inT = a.check_in_time || a.in_time || '--';
+        const outT = a.check_out_time || a.out_time || (a.status === 'CHECKED_IN' ? 'Active' : '--');
+        const isInside = a.status === 'CHECKED_IN' || outT === 'Active';
+        const duration = a.duration_minutes ? `${a.duration_minutes} mins` : (isInside ? 'In Session ⏱️' : '--');
+        const memberObj = globalMembers.find(m => String(m.member_id).trim() === String(a.member_id).trim()) || {};
+        const memberMobile = memberObj.mobile || a.mobile || '';
+
+        return `
+          <tr class="hover:bg-gray-900/40">
+            <td class="py-3 px-4 font-bold text-white">
+              <div class="flex items-center space-x-2.5">
+                <div class="w-7 h-7 rounded-lg ${isInside ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'} flex items-center justify-center text-xs font-black">
+                  ${(a.member_name || 'M').charAt(0)}
+                </div>
+                <div>
+                  <div>${a.member_name || 'Member'}</div>
+                  <div class="text-[10px] text-gray-500 font-mono">${a.member_id || ''}</div>
+                </div>
+              </div>
+            </td>
+            <td class="py-3 px-4 text-gray-300 font-medium">${Utils.formatDate(a.date)}</td>
+            <td class="py-3 px-4 text-emerald-400 font-semibold">${inT}</td>
+            <td class="py-3 px-4 ${isInside ? 'text-amber-400 font-bold' : 'text-cyan-400 font-semibold'}">
+              ${isInside ? '<span class="inline-flex items-center space-x-1.5"><span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span><span>Active Inside</span></span>' : outT}
+            </td>
+            <td class="py-3 px-4 text-gray-400 text-xs">${duration}</td>
+            <td class="py-3 px-4 text-center">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${isInside ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}">
+                ${isInside ? 'INSIDE GYM' : 'COMPLETED'}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-right">
+              ${memberMobile ? `
+                <a href="https://wa.me/91${memberMobile}?text=${encodeURIComponent(`Hi ${a.member_name}, greeting from ${CONFIG.GYM_NAME}!`)}" target="_blank" class="p-1.5 rounded-lg bg-gray-800 hover:bg-emerald-600/30 text-gray-400 hover:text-emerald-400 text-xs inline-flex items-center" title="WhatsApp Member">
+                  💬
+                </a>
+              ` : '--'}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filterAttendanceLogs(val) {
+      currentAttSearch = val || '';
+      renderAttendanceTable();
+    }
+
+    function setAttendanceFilter(filter) {
+      currentAttFilter = filter;
+      const filters = ['all', 'today', 'active'];
+      filters.forEach(f => {
+        const btn = document.getElementById(`att-filter-${f}`);
+        if (btn) {
+          if (f.toUpperCase() === filter) {
+            btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-500 text-gray-950 transition shadow-sm';
+          } else {
+            btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-gray-900 border border-gray-800 text-gray-400 hover:text-white transition';
+          }
+        }
+      });
+      renderAttendanceTable();
+    }
+
     function switchDashboardTab(tab) {
-      const tabs = ['overview', 'active', 'leave', 'packages'];
+      const tabs = ['overview', 'attendance', 'active', 'leave', 'packages'];
 
       tabs.forEach(t => {
         const btn = document.getElementById(`tab-btn-${t}`);

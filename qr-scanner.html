@@ -140,16 +140,22 @@
         const msgEl = document.getElementById('scan-message');
         const modal = document.getElementById('scan-modal');
 
-        if (res.action === 'CHECK_OUT') {
+        const actionType = res.action || res.type;
+        if (actionType === 'CHECK_OUT') {
           iconEl.className = 'w-20 h-20 rounded-full bg-cyan-500/20 text-cyan-400 border-2 border-cyan-500 flex items-center justify-center text-4xl mx-auto';
           iconEl.textContent = '👋';
           titleEl.textContent = 'OUT DONE! (Check-Out)';
-          msgEl.textContent = `Checked OUT at ${res.time}. Workout session finished!`;
+          msgEl.textContent = res.message || `Checked OUT at ${res.time}. Total workout time: ${res.durationMinutes || 0} mins.`;
+        } else if (actionType === 'CHECK_IN_ACTIVE') {
+          iconEl.className = 'w-20 h-20 rounded-full bg-amber-500/20 text-amber-400 border-2 border-amber-500 flex items-center justify-center text-4xl mx-auto';
+          iconEl.textContent = '⏱️';
+          titleEl.textContent = 'Already Checked IN!';
+          msgEl.textContent = res.message || `You are already checked in since ${res.time}.`;
         } else {
           iconEl.className = 'w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 border-2 border-emerald-500 flex items-center justify-center text-4xl mx-auto';
           iconEl.textContent = '🏋️‍♂️';
           titleEl.textContent = 'ENTRY DONE! (Check-In)';
-          msgEl.textContent = `Checked IN at ${res.time}. Have a great workout!`;
+          msgEl.textContent = res.message || `Checked IN at ${res.time}. Have a great workout!`;
         }
 
         modal.classList.remove('hidden');

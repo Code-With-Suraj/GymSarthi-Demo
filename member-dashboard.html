@@ -189,42 +189,107 @@
       if (safeLogs.length === 0) {
         tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-gray-500">No attendance scans recorded yet. Use the Scan Gate QR button above when entering the gym!</td></tr>`;
         if (streakEl) streakEl.textContent = '0 Days';
-        if (todayStatus) todayStatus.textContent = 'Status: Not punched today yet.';
+        if (todayStatus) todayStatus.textContent = 'Status: Not checked in today yet.';
         return;
       }
 
-      if (streakEl) streakEl.textContent = `${safeLogs.length} Days`;
+      // Helper to format Date to YYYY-MM-DD
+      const toYMD = (dObj) => {
+        if (!dObj) return '';
+        const y = dObj.getFullYear();
+        const m = String(dObj.getMonth() + 1).padStart(2, '0');
+        const d = String(dObj.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      };
 
-      const todayStr = new Date().toISOString().split('T')[0];
-      const todayLog = safeLogs.find(l => l.date === todayStr);
+      const now = new Date();
+      const todayYMD = toYMD(now);
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayYMD = toYMD(yesterday);
+
+      // Extract unique workout dates (YYYY-MM-DD) sorted descending
+      const uniqueDates = [...new Set(safeLogs.map(l => {
+        if (!l.date) return null;
+        if (typeof l.date === 'string' && /^\d{4}-\d{2}-\d{2}/.test(l.date)) {
+          return l.date.substring(0, 10);
+        }
+        const parsed = new Date(l.date);
+        return isNaN(parsed.getTime()) ? String(l.date).substring(0, 10) : toYMD(parsed);
+      }).filter(Boolean))].sort().reverse();
+
+      // Calculate consecutive workout streak
+      let streak = 0;
+      if (uniqueDates.length > 0) {
+        if (uniqueDates[0] === todayYMD || uniqueDates[0] === yesterdayYMD) {
+          streak = 1;
+          const curr = new Date(uniqueDates[0]);
+          for (let i = 1; i < uniqueDates.length; i++) {
+            curr.setDate(curr.getDate() - 1);
+            const expYMD = toYMD(curr);
+            if (uniqueDates[i] === expYMD) {
+              streak++;
+            } else {
+              break;
+            }
+          }
+        }
+      }
+
+      if (streakEl) {
+        streakEl.textContent = `${streak} ${streak === 1 ? 'Day' : 'Days'}`;
+      }
+
+      // Find today's latest log
+      const todayLog = safeLogs.find(l => {
+        const dStr = (l.date && typeof l.date === 'string' && l.date.includes('T')) ? l.date.split('T')[0] : String(l.date || '').substring(0, 10);
+        return dStr === todayYMD;
+      });
 
       if (todayStatus) {
         if (todayLog) {
-          if (todayLog.out_time) {
-            todayStatus.innerHTML = `<span class="text-cyan-400 font-bold">Checked Out at ${todayLog.out_time}</span>`;
-          } else if (todayLog.in_time) {
-            todayStatus.innerHTML = `<span class="text-emerald-400 font-bold">Currently Checked IN since ${todayLog.in_time}</span>`;
+          const inTime = todayLog.check_in_time || todayLog.in_time || '';
+          const outTime = todayLog.check_out_time || todayLog.out_time || '';
+          if (outTime && outTime !== 'Active' && outTime !== '--') {
+            todayStatus.innerHTML = `<span class="text-cyan-400 font-bold">Checked Out at ${outTime}${todayLog.duration_minutes ? ` (${todayLog.duration_minutes} mins)` : ''}</span>`;
+          } else if (inTime && inTime !== '--') {
+            todayStatus.innerHTML = `<span class="text-emerald-400 font-bold">Currently Checked IN since ${inTime}</span>`;
+          } else {
+            todayStatus.innerHTML = `<span class="text-emerald-400 font-bold">Checked IN Today</span>`;
           }
         } else {
           todayStatus.textContent = 'Status: Not checked in today yet.';
         }
       }
 
-      tbody.innerHTML = safeLogs.slice(0, 10).map(log => `
-        <tr class="hover:bg-gray-900/40">
-          <td class="py-3 px-2 font-medium text-gray-200">${Utils.formatDate(log.date)}</td>
-          <td class="py-3 px-2 text-emerald-400 font-semibold">${log.in_time || '--'}</td>
-          <td class="py-3 px-2 text-cyan-400 font-semibold">${log.out_time || 'Active'}</td>
-          <td class="py-3 px-2">
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${log.status === 'COMPLETED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">
-              ${log.status || 'PRESENT'}
-            </span>
-          </td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = safeLogs.slice(0, 15).map(log => {
+        const inTime = log.check_in_time || log.in_time || '--';
+        const outTime = log.check_out_time || log.out_time || (log.status === 'CHECKED_IN' ? 'Active' : '--');
+        const isCompleted = log.status === 'COMPLETED' || (outTime && outTime !== 'Active' && outTime !== '--');
+        const statusLabel = log.status || (isCompleted ? 'COMPLETED' : 'CHECKED_IN');
+        return `
+          <tr class="hover:bg-gray-900/40">
+            <td class="py-3 px-2 font-medium text-gray-200">${Utils.formatDate(log.date)}</td>
+            <td class="py-3 px-2 text-emerald-400 font-semibold">${inTime}</td>
+            <td class="py-3 px-2 ${outTime === 'Active' ? 'text-amber-400' : 'text-cyan-400'} font-semibold">${outTime}</td>
+            <td class="py-3 px-2">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isCompleted ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">
+                ${statusLabel}
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     loadDashboard();
+
+    // Background prefetch store products for instant 0ms browsing
+    if (window.requestIdleCallback) {
+      window.requestIdleCallback(() => Api.getStorePageData(CONFIG.GYM_ID).catch(() => {}));
+    } else {
+      setTimeout(() => Api.getStorePageData(CONFIG.GYM_ID).catch(() => {}), 1000);
+    }
   </script>
 </body>
 </html>
