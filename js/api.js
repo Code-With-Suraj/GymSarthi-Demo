@@ -135,14 +135,13 @@ const Api = {
 
         // Safe defaults for UI continuity when endpoint returns 404 or fails
         if (action === 'getStorePageData') {
-          const defaultProducts = (typeof CONFIG !== 'undefined' && Array.isArray(CONFIG.DEFAULT_PRODUCTS)) ? CONFIG.DEFAULT_PRODUCTS : [];
           return {
-            products: defaultProducts,
+            products: [],
             subscription: { hasStore: true, hasActiveSubscription: true, planId: 'PLAN_PRO_Y' },
             plans: (typeof CONFIG !== 'undefined' && Array.isArray(CONFIG.SUBSCRIPTION_PLANS)) ? CONFIG.SUBSCRIPTION_PLANS : []
           };
         } else if (action === 'getProducts') {
-          return (typeof CONFIG !== 'undefined' && Array.isArray(CONFIG.DEFAULT_PRODUCTS)) ? CONFIG.DEFAULT_PRODUCTS : [];
+          return [];
         } else if (action === 'getDashboardData') {
           return { members: [], packages: [], payments: [], expenses: [], attendance: [], inactiveMembers: [], expiringMembers: [], subscription: { hasStore: true, hasActiveSubscription: true }, plans: [] };
         } else if (['getMembers', 'getPackages', 'getPayments', 'getExpenses'].includes(action)) {

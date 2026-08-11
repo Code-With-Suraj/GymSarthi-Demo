@@ -184,62 +184,65 @@
     let currentCategory = 'ALL';
     let currentSearchQuery = '';
     let cart = [];
+    let isLoading = true;
 
-    // Instant Super-Fast Cache Load (0ms initial render)
-    function initializeInstantStore() {
-      const cachedStore = Utils.storage.get('store_page_cache');
-      if (cachedStore && Array.isArray(cachedStore.products) && cachedStore.products.length > 0) {
-        allProducts = cachedStore.products;
-      } else if (typeof CONFIG !== 'undefined' && Array.isArray(CONFIG.DEFAULT_PRODUCTS) && CONFIG.DEFAULT_PRODUCTS.length > 0) {
-        allProducts = CONFIG.DEFAULT_PRODUCTS;
+    // Purge any old demo cache
+    Utils.storage.remove('store_page_cache');
+
+    async function loadProducts(forceRefresh = true) {
+      const lockOverlay = document.getElementById('store-lock-overlay');
+      const storeMainContent = document.getElementById('store-main-content');
+      const cartBtn = document.getElementById('cart-btn');
+      const grid = document.getElementById('product-grid');
+
+      if (grid && allProducts.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full text-center py-16 glass-card rounded-3xl p-8 border-gray-800 space-y-3">
+            <div class="w-10 h-10 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p class="text-xs text-gray-400 font-medium">Loading products from gym store database...</p>
+          </div>
+        `;
       }
-      if (allProducts.length > 0) {
-        applyFilters();
+
+      try {
+        const storeData = await Api.getStorePageData(CONFIG.GYM_ID, forceRefresh, (freshData) => {
+          if (freshData) {
+            handleStoreData(freshData);
+          }
+        });
+
+        if (storeData) {
+          handleStoreData(storeData);
+        }
+      } catch (err) {
+        console.warn('Store database load error:', err);
+        isLoading = false;
+        renderProducts([]);
       }
     }
 
-    async function loadProducts() {
+    function handleStoreData(storeData) {
+      isLoading = false;
       const lockOverlay = document.getElementById('store-lock-overlay');
       const storeMainContent = document.getElementById('store-main-content');
       const cartBtn = document.getElementById('cart-btn');
 
-      try {
-        const storeData = await Api.getStorePageData(CONFIG.GYM_ID, false, (freshData) => {
-          if (freshData && Array.isArray(freshData.products) && freshData.products.length > 0) {
-            allProducts = freshData.products;
-            Utils.storage.set('store_page_cache', freshData);
-            applyFilters();
-          }
-        });
+      const sub = storeData ? storeData.subscription : null;
+      const products = storeData && Array.isArray(storeData.products) ? storeData.products : [];
 
-        const sub = storeData ? storeData.subscription : null;
-        let products = storeData && Array.isArray(storeData.products) ? storeData.products : [];
-        if (products.length === 0 && typeof CONFIG !== 'undefined' && Array.isArray(CONFIG.DEFAULT_PRODUCTS)) {
-          products = CONFIG.DEFAULT_PRODUCTS;
-        }
-
-        if (sub && (sub.hasStore === false || sub.hasActiveSubscription === false)) {
-          if (lockOverlay) lockOverlay.classList.remove('hidden');
-          if (storeMainContent) storeMainContent.classList.add('hidden');
-          if (cartBtn) cartBtn.classList.add('hidden');
-          return;
-        } else {
-          if (lockOverlay) lockOverlay.classList.add('hidden');
-          if (storeMainContent) storeMainContent.classList.remove('hidden');
-          if (cartBtn) cartBtn.classList.remove('hidden');
-        }
-
-        allProducts = products;
-        Utils.storage.set('store_page_cache', { products, subscription: sub || { hasStore: true, hasActiveSubscription: true } });
-        applyFilters();
-
-      } catch (err) {
-        console.warn('Store background fetch skipped, using instant cache:', err);
-        if (allProducts.length === 0 && typeof CONFIG !== 'undefined' && CONFIG.DEFAULT_PRODUCTS) {
-          allProducts = CONFIG.DEFAULT_PRODUCTS;
-          applyFilters();
-        }
+      if (sub && (sub.hasStore === false || sub.hasActiveSubscription === false)) {
+        if (lockOverlay) lockOverlay.classList.remove('hidden');
+        if (storeMainContent) storeMainContent.classList.add('hidden');
+        if (cartBtn) cartBtn.classList.add('hidden');
+        return;
+      } else {
+        if (lockOverlay) lockOverlay.classList.add('hidden');
+        if (storeMainContent) storeMainContent.classList.remove('hidden');
+        if (cartBtn) cartBtn.classList.remove('hidden');
       }
+
+      allProducts = products;
+      applyFilters();
     }
 
     function applyFilters() {
@@ -311,11 +314,16 @@
       const badge = document.getElementById('products-count-badge');
       if (!badge) return;
 
+      if (isLoading) {
+        badge.innerHTML = 'Fetching inventory...';
+        return;
+      }
+
       const total = filteredProducts.length;
       if (currentSearchQuery.trim()) {
         badge.innerHTML = `<span class="text-emerald-400 font-bold">${total}</span> product${total === 1 ? '' : 's'} matching "<span class="text-white">${currentSearchQuery.trim()}</span>"`;
       } else {
-        badge.innerHTML = `<span class="text-emerald-400 font-bold">${total}</span> items available`;
+        badge.innerHTML = `<span class="text-emerald-400 font-bold">${total}</span> items in store`;
       }
     }
 
@@ -323,25 +331,38 @@
       const grid = document.getElementById('product-grid');
       if (!grid) return;
 
+      if (isLoading) return;
+
       if (!prods || prods.length === 0) {
-        grid.innerHTML = `
-          <div class="col-span-full text-center py-12 glass-card rounded-3xl p-8 border-gray-800 space-y-3">
-            <div class="text-4xl">🔍</div>
-            <h3 class="text-base font-bold text-white">No Matching Products Found</h3>
-            <p class="text-xs text-gray-400">We couldn't find any products matching "${currentSearchQuery}". Try checking for spelling or clear search filters.</p>
-            <button onclick="clearStoreSearch()" class="mt-3 px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold hover:bg-emerald-500/30 transition-all">
-              Clear Search Filter
-            </button>
-          </div>
-        `;
+        if (currentSearchQuery.trim()) {
+          grid.innerHTML = `
+            <div class="col-span-full text-center py-12 glass-card rounded-3xl p-8 border-gray-800 space-y-3">
+              <div class="text-4xl">🔍</div>
+              <h3 class="text-base font-bold text-white">No Matching Products Found</h3>
+              <p class="text-xs text-gray-400">We couldn't find any products matching "${currentSearchQuery}".</p>
+              <button onclick="clearStoreSearch()" class="mt-3 px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold hover:bg-emerald-500/30 transition-all">
+                Clear Search Filter
+              </button>
+            </div>
+          `;
+        } else {
+          grid.innerHTML = `
+            <div class="col-span-full text-center py-16 glass-card rounded-3xl p-8 border-gray-800 space-y-3">
+              <div class="text-4xl">🛒</div>
+              <h3 class="text-base font-bold text-white">No Products In Store</h3>
+              <p class="text-xs text-gray-400 max-w-sm mx-auto">There are currently no products available in the gym store inventory database. Check back soon or contact gym management.</p>
+            </div>
+          `;
+        }
         return;
       }
 
       grid.innerHTML = prods.map(p => {
-        const prodId = p.product_id || p.id;
-        const inStock = p.stock_quantity !== undefined ? p.stock_quantity : (p.stock !== undefined ? p.stock : 10);
+        const prodId = p.product_id || p.id || '';
+        const inStock = p.stock_quantity !== undefined && p.stock_quantity !== '' ? Number(p.stock_quantity) : (p.stock !== undefined && p.stock !== '' ? Number(p.stock) : 0);
         const isGear = String(p.category || '').toLowerCase().includes('gear') || String(p.category || '').toLowerCase().includes('accessor');
         const icon = isGear ? '🏋️' : '🥛';
+        const price = Number(p.price || 0);
 
         return `
           <div class="glass-card p-5 rounded-2xl border-gray-800 flex flex-col justify-between glass-card-hover group">
@@ -349,20 +370,20 @@
               <div class="flex items-center justify-between mb-2.5">
                 <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-lg bg-gray-900 text-cyan-400 border border-cyan-500/20 flex items-center space-x-1">
                   <span>${icon}</span>
-                  <span>${p.category || 'Supplements'}</span>
+                  <span>${p.category || 'General'}</span>
                 </span>
                 <span class="text-[11px] font-semibold ${inStock > 5 ? 'text-emerald-400' : (inStock > 0 ? 'text-amber-400' : 'text-rose-400')}">
                   ${inStock > 5 ? `In Stock (${inStock})` : (inStock > 0 ? `Low Stock (${inStock})` : 'Out of Stock')}
                 </span>
               </div>
-              <h3 class="font-bold text-base text-white group-hover:text-emerald-400 transition-colors">${p.name}</h3>
-              <p class="text-xs text-gray-400 mt-1.5 leading-relaxed line-clamp-2">${p.description || 'Authentic gym grade workout essential.'}</p>
+              <h3 class="font-bold text-base text-white group-hover:text-emerald-400 transition-colors">${p.name || 'Product'}</h3>
+              <p class="text-xs text-gray-400 mt-1.5 leading-relaxed line-clamp-2">${p.description || 'Gym authentic supplement/gear product.'}</p>
             </div>
 
             <div class="mt-5 pt-4 border-t border-gray-800/60 flex items-center justify-between">
               <div>
                 <span class="text-xs text-gray-500 block">Price</span>
-                <span class="text-xl font-black text-emerald-400">₹${Number(p.price || 0).toLocaleString('en-IN')}</span>
+                <span class="text-xl font-black text-emerald-400">₹${price.toLocaleString('en-IN')}</span>
               </div>
               <button onclick="addToCart('${prodId}')" ${inStock <= 0 ? 'disabled' : ''} class="px-4 py-2 rounded-xl ${inStock <= 0 ? 'bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-700' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-gray-950'} font-bold text-xs flex items-center space-x-1.5 transition-all shadow-sm">
                 <span>🛒</span>
@@ -525,9 +546,8 @@
       }
     }
 
-    // Execute instant store rendering first, then background refresh
-    initializeInstantStore();
-    loadProducts();
+    // Fetch and load live products directly from database
+    loadProducts(true);
   </script>
 </body>
 </html>
