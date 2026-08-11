@@ -93,6 +93,7 @@
   <script src="js/auth.js"></script>
   <script src="js/pwa.js"></script>
   <script src="js/owner-sidebar.js"></script>
+  <script src="js/owner-router.js"></script>
   <script>
     Auth.requireAuth('OWNER');
     OwnerSidebar.render('packages');
@@ -100,27 +101,35 @@
     async function loadPackages() {
       const grid = document.getElementById('packages-grid');
       try {
-        const pkgs = await Api.getPackages();
-        const list = Array.isArray(pkgs) ? pkgs : [];
-
-        grid.innerHTML = list.map(p => `
-          <div class="glass-card p-6 rounded-3xl border-gray-800 flex flex-col justify-between glass-card-hover relative group">
-            <div>
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">${p.duration_days} Days</span>
-                <span class="text-[10px] text-gray-500 font-mono">${p.badge || p.package_id}</span>
+        const renderList = (pkgs) => {
+          const list = Array.isArray(pkgs) ? pkgs : [];
+          if (grid) {
+            grid.innerHTML = list.map(p => `
+              <div class="glass-card p-6 rounded-3xl border-gray-800 flex flex-col justify-between glass-card-hover relative group">
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">${p.duration_days} Days</span>
+                    <span class="text-[10px] text-gray-500 font-mono">${p.badge || p.package_id}</span>
+                  </div>
+                  <h3 class="font-bold text-lg text-white">${p.name}</h3>
+                  <p class="text-xs text-gray-400 mt-2">${p.description || 'Full Gym Access'}</p>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-800 flex items-center justify-between">
+                  <span class="text-2xl font-black text-emerald-400">₹${Number(p.price).toLocaleString('en-IN')}</span>
+                  <button onclick="deletePkg('${p.package_id}')" class="text-rose-400 hover:text-rose-300 font-bold text-xs p-1">
+                    Delete
+                  </button>
+                </div>
               </div>
-              <h3 class="font-bold text-lg text-white">${p.name}</h3>
-              <p class="text-xs text-gray-400 mt-2">${p.description || 'Full Gym Access'}</p>
-            </div>
-            <div class="mt-6 pt-4 border-t border-gray-800 flex items-center justify-between">
-              <span class="text-2xl font-black text-emerald-400">₹${Number(p.price).toLocaleString('en-IN')}</span>
-              <button onclick="deletePkg('${p.package_id}')" class="text-rose-400 hover:text-rose-300 font-bold text-xs p-1">
-                Delete
-              </button>
-            </div>
-          </div>
-        `).join('');
+            `).join('');
+          }
+        };
+
+        const pkgs = await Api.getPackages(CONFIG.GYM_ID, false, (freshPkgs) => {
+          renderList(freshPkgs);
+        });
+        if (pkgs) renderList(pkgs);
+
       } catch (err) {
         console.warn('Packages load error:', err);
       }

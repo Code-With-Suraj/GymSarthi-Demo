@@ -109,6 +109,7 @@
   <script src="js/auth.js"></script>
   <script src="js/pwa.js"></script>
   <script src="js/owner-sidebar.js"></script>
+  <script src="js/owner-router.js"></script>
   <script>
     Auth.requireAuth('OWNER');
     OwnerSidebar.render('payments');
@@ -118,54 +119,65 @@
     async function loadPayments() {
       const tbody = document.getElementById('payments-table-body');
       try {
-        const rawPayments = await Api.getPayments(CONFIG.GYM_ID);
-        const payments = Array.isArray(rawPayments) ? rawPayments : [];
+        const renderPayments = (rawPayments) => {
+          const payments = Array.isArray(rawPayments) ? rawPayments : [];
 
-        // Update KPIs
-        const totalRev = payments.filter(p => p.status === 'SUCCESS' || p.status === 'COMPLETED' || p.status === 'PAID').reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
-        const pendingCash = payments.filter(p => p.status === 'PENDING_CASH' || p.status === 'PENDING' || p.status === 'UNPAID').reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
-        const onlineSales = payments.filter(p => p.payment_method === 'ONLINE' && (p.status === 'SUCCESS' || p.status === 'COMPLETED')).reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+          // Update KPIs
+          const totalRev = payments.filter(p => p.status === 'SUCCESS' || p.status === 'COMPLETED' || p.status === 'PAID').reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+          const pendingCash = payments.filter(p => p.status === 'PENDING_CASH' || p.status === 'PENDING' || p.status === 'UNPAID').reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+          const onlineSales = payments.filter(p => p.payment_method === 'ONLINE' && (p.status === 'SUCCESS' || p.status === 'COMPLETED')).reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
 
-        document.getElementById('kpi-total-rev').textContent = `₹${totalRev.toLocaleString('en-IN')}`;
-        document.getElementById('kpi-pending-cash').textContent = `₹${pendingCash.toLocaleString('en-IN')}`;
-        document.getElementById('kpi-online-sales').textContent = `₹${onlineSales.toLocaleString('en-IN')}`;
+          const elRev = document.getElementById('kpi-total-rev');
+          const elPend = document.getElementById('kpi-pending-cash');
+          const elOnl = document.getElementById('kpi-online-sales');
 
-        tbody.innerHTML = payments.map(p => {
-          const isPending = p.status === 'PENDING' || p.status === 'PENDING_CASH' || p.status === 'UNPAID';
-          const isOnline = p.payment_method === 'ONLINE';
-          const purpose = p.payment_type ? `${p.payment_type} — ${p.reference_id || 'Fee'}` : (p.purpose || 'Gym Membership');
+          if (elRev) elRev.textContent = `₹${totalRev.toLocaleString('en-IN')}`;
+          if (elPend) elPend.textContent = `₹${pendingCash.toLocaleString('en-IN')}`;
+          if (elOnl) elOnl.textContent = `₹${onlineSales.toLocaleString('en-IN')}`;
 
-          return `
-            <tr class="hover:bg-gray-900/40">
-              <td class="py-3.5 px-4 font-mono text-[11px] text-gray-400">${p.payment_id}</td>
-              <td class="py-3.5 px-4 font-bold text-white">${p.member_name || 'Member'}</td>
-              <td class="py-3.5 px-4 text-gray-300 text-xs">${purpose}</td>
-              <td class="py-3.5 px-4 font-black text-emerald-400">₹${Number(p.amount).toLocaleString('en-IN')}</td>
-              <td class="py-3.5 px-4">
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isOnline ? 'bg-cyan-500/20 text-cyan-400' : 'bg-amber-500/20 text-amber-400'}">
-                  ${isOnline ? '💳 Razorpay' : '💵 Cash'}
-                </span>
-              </td>
-              <td class="py-3.5 px-4">
-                ${isPending ? `
-                  <div class="flex items-center space-x-2">
-                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                      ⚠️ CASH PENDING
-                    </span>
-                    <button onclick="confirmMarkAsPaid('${p.payment_id}', '${(p.member_name || 'Member').replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-black text-[11px] transition-all shadow flex items-center space-x-1">
-                      <span>💵 Mark Paid</span>
-                    </button>
-                  </div>
-                ` : `
-                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                    ✅ COMPLETED
+          if (!tbody) return;
+          tbody.innerHTML = payments.map(p => {
+            const isPending = p.status === 'PENDING' || p.status === 'PENDING_CASH' || p.status === 'UNPAID';
+            const isOnline = p.payment_method === 'ONLINE';
+            const purpose = p.payment_type ? `${p.payment_type} — ${p.reference_id || 'Fee'}` : (p.purpose || 'Gym Membership');
+
+            return `
+              <tr class="hover:bg-gray-900/40">
+                <td class="py-3.5 px-4 font-mono text-[11px] text-gray-400">${p.payment_id}</td>
+                <td class="py-3.5 px-4 font-bold text-white">${p.member_name || 'Member'}</td>
+                <td class="py-3.5 px-4 text-gray-300 text-xs">${purpose}</td>
+                <td class="py-3.5 px-4 font-black text-emerald-400">₹${Number(p.amount).toLocaleString('en-IN')}</td>
+                <td class="py-3.5 px-4">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isOnline ? 'bg-cyan-500/20 text-cyan-400' : 'bg-amber-500/20 text-amber-400'}">
+                    ${isOnline ? '💳 Razorpay' : '💵 Cash'}
                   </span>
-                `}
-              </td>
-              <td class="py-3.5 px-4 text-right text-gray-500 text-xs">${Utils.formatDate(p.created_at)}</td>
-            </tr>
-          `;
-        }).join('');
+                </td>
+                <td class="py-3.5 px-4">
+                  ${isPending ? `
+                    <div class="flex items-center space-x-2">
+                      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                        ⚠️ CASH PENDING
+                      </span>
+                      <button onclick="confirmMarkAsPaid('${p.payment_id}', '${(p.member_name || 'Member').replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-black text-[11px] transition-all shadow flex items-center space-x-1">
+                        <span>💵 Mark Paid</span>
+                      </button>
+                    </div>
+                  ` : `
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                      ✅ COMPLETED
+                    </span>
+                  `}
+                </td>
+                <td class="py-3.5 px-4 text-right text-gray-500 text-xs">${Utils.formatDate(p.created_at)}</td>
+              </tr>
+            `;
+          }).join('');
+        };
+
+        const rawPayments = await Api.getPayments(CONFIG.GYM_ID, false, (freshData) => {
+          renderPayments(freshData);
+        });
+        if (rawPayments) renderPayments(rawPayments);
 
       } catch (err) {
         console.warn('Payments load error:', err);

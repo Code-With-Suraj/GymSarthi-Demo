@@ -238,6 +238,7 @@
   <script src="js/pwa.js"></script>
   <script src="js/razorpay.js"></script>
   <script src="js/owner-sidebar.js"></script>
+  <script src="js/owner-router.js"></script>
   <script>
     Auth.requireAuth('OWNER');
     OwnerSidebar.render('subscription');
@@ -246,20 +247,30 @@
 
     async function loadCurrentSubscription() {
       try {
-        const sub = await Api.getGymSubscription(CONFIG.GYM_ID);
-        if (sub) {
-          document.getElementById('active-plan-title').textContent = sub.planTitle || sub.planName || sub.plan_name || sub.planId || sub.plan_id;
-          document.getElementById('active-plan-expiry').textContent = `Valid Until: ${sub.expiryDate || Utils.formatDate(sub.end_date)}`;
-
+        const renderSub = (sub) => {
+          if (!sub) return;
+          const elTitle = document.getElementById('active-plan-title');
+          const elExp = document.getElementById('active-plan-expiry');
           const storeBadge = document.getElementById('active-store-status');
-          if (sub.hasStore === true) {
-            storeBadge.className = 'px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-400 font-bold';
-            storeBadge.textContent = '🛒 Store & Expenses Enabled';
-          } else {
-            storeBadge.className = 'px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold';
-            storeBadge.textContent = '🔒 Store & Expenses Locked';
+
+          if (elTitle) elTitle.textContent = sub.planTitle || sub.planName || sub.plan_name || sub.planId || sub.plan_id;
+          if (elExp) elExp.textContent = `Valid Until: ${sub.expiryDate || Utils.formatDate(sub.end_date)}`;
+
+          if (storeBadge) {
+            if (sub.hasStore === true) {
+              storeBadge.className = 'px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-400 font-bold';
+              storeBadge.textContent = '🛒 Store & Expenses Enabled';
+            } else {
+              storeBadge.className = 'px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold';
+              storeBadge.textContent = '🔒 Store & Expenses Locked';
+            }
           }
-        }
+        };
+
+        const sub = await Api.getGymSubscription(CONFIG.GYM_ID, false, (freshSub) => {
+          renderSub(freshSub);
+        });
+        if (sub) renderSub(sub);
       } catch (err) {
         console.warn('Subscription fetch error:', err);
       }

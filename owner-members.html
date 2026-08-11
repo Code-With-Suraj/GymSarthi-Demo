@@ -206,6 +206,7 @@
   <script src="js/auth.js"></script>
   <script src="js/pwa.js"></script>
   <script src="js/owner-sidebar.js"></script>
+  <script src="js/owner-router.js"></script>
   <script>
     Auth.requireAuth('OWNER');
     OwnerSidebar.render('members');
@@ -256,18 +257,29 @@
 
     async function loadMembersData() {
       try {
-        const dashData = await Api.getDashboardData(CONFIG.GYM_ID);
-        expiringMembers = Array.isArray(dashData.expiringMembers) ? dashData.expiringMembers : [];
-        inactiveMembers = Array.isArray(dashData.inactiveMembers) ? dashData.inactiveMembers : [];
-        allMembers = Array.isArray(dashData.members) ? dashData.members : [];
+        const renderData = (dashData) => {
+          if (!dashData) return;
+          expiringMembers = Array.isArray(dashData.expiringMembers) ? dashData.expiringMembers : [];
+          inactiveMembers = Array.isArray(dashData.inactiveMembers) ? dashData.inactiveMembers : [];
+          allMembers = Array.isArray(dashData.members) ? dashData.members : [];
 
-        document.getElementById('expiring-count-badge').textContent = expiringMembers.length;
-        document.getElementById('inactive-count-badge').textContent = inactiveMembers.length;
-        document.getElementById('all-count-badge').textContent = allMembers.length;
+          const expBadge = document.getElementById('expiring-count-badge');
+          const inactBadge = document.getElementById('inactive-count-badge');
+          const allBadge = document.getElementById('all-count-badge');
 
-        renderExpiringTable(expiringMembers);
-        renderInactiveTable(inactiveMembers);
-        renderAllMembersTable(allMembers);
+          if (expBadge) expBadge.textContent = expiringMembers.length;
+          if (inactBadge) inactBadge.textContent = inactiveMembers.length;
+          if (allBadge) allBadge.textContent = allMembers.length;
+
+          renderExpiringTable(expiringMembers);
+          renderInactiveTable(inactiveMembers);
+          renderAllMembersTable(allMembers);
+        };
+
+        const dashData = await Api.getDashboardData(CONFIG.GYM_ID, false, (freshData) => {
+          renderData(freshData);
+        });
+        if (dashData) renderData(dashData);
 
       } catch (err) {
         console.warn('Members load error:', err);

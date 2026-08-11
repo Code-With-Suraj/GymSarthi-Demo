@@ -5,9 +5,43 @@
 
 const Api = {
   _cache: {},
-  _cacheTtlMs: 60000, // 60 seconds client-side cache for GET requests
+  _cacheTtlMs: 300000, // 5 minutes client-side TTL
+  _staleAgeMs: 30000,   // 30 seconds stale threshold before triggering background fetch
 
-  async call(action, payload = {}, forceRefresh = false) {
+  getStorageCache(cacheKey) {
+    try {
+      const stored = localStorage.getItem('GYMSARTHI_CACHE_' + cacheKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Date.now() - parsed.timestamp < this._cacheTtlMs) {
+          return parsed;
+        }
+      }
+    } catch (e) {}
+    return null;
+  },
+
+  setStorageCache(cacheKey, data) {
+    const entry = { data, timestamp: Date.now() };
+    this._cache[cacheKey] = entry;
+    try {
+      localStorage.setItem('GYMSARTHI_CACHE_' + cacheKey, JSON.stringify(entry));
+    } catch (e) {}
+  },
+
+  clearStorageCache() {
+    this._cache = {};
+    try {
+      const keys = Object.keys(localStorage);
+      for (let i = 0; i < keys.length; i++) {
+        if (keys[i].startsWith('GYMSARTHI_CACHE_')) {
+          localStorage.removeItem(keys[i]);
+        }
+      }
+    } catch (e) {}
+  },
+
+  async call(action, payload = {}, forceRefresh = false, onBackgroundUpdate = null) {
     const baseUrl = CONFIG.API_BASE_URL;
     if (!baseUrl) {
       throw new Error('API Base URL is missing. Please check config.js.');
@@ -16,17 +50,37 @@ const Api = {
     const isReadAction = action.startsWith('get');
     const cacheKey = action + '_' + JSON.stringify(payload);
 
-    if (isReadAction && !forceRefresh && this._cache[cacheKey]) {
-      const entry = this._cache[cacheKey];
-      if (Date.now() - entry.timestamp < this._cacheTtlMs) {
-        return entry.data;
+    if (isReadAction && !forceRefresh) {
+      const cacheEntry = this._cache[cacheKey] || this.getStorageCache(cacheKey);
+      if (cacheEntry) {
+        const age = Date.now() - cacheEntry.timestamp;
+        
+        // If data is fresh (< 30s), return immediately without background request
+        if (age < this._staleAgeMs && !onBackgroundUpdate) {
+          return cacheEntry.data;
+        }
+
+        // Stale-While-Revalidate: Return cached data instantly, fetch fresh data asynchronously in background
+        this._fetchAndCache(baseUrl, action, payload, cacheKey).then(freshData => {
+          if (onBackgroundUpdate && typeof onBackgroundUpdate === 'function') {
+            onBackgroundUpdate(freshData);
+          }
+        }).catch(err => console.warn('Background revalidation skipped:', err));
+
+        return cacheEntry.data;
       }
     }
 
+    // Direct fetch if no cache or forceRefresh requested
+    const freshData = await this._fetchAndCache(baseUrl, action, payload, cacheKey);
+    return freshData;
+  },
+
+  async _fetchAndCache(baseUrl, action, payload, cacheKey) {
+    const isReadAction = action.startsWith('get');
     const fullPayload = { action, ...payload };
 
     try {
-      // Send as POST request with JSON string body
       const response = await fetch(baseUrl, {
         method: 'POST',
         headers: {
@@ -45,13 +99,10 @@ const Api = {
       }
 
       if (isReadAction) {
-        this._cache[cacheKey] = {
-          data: json.data,
-          timestamp: Date.now()
-        };
+        this.setStorageCache(cacheKey, json.data);
       } else {
         // Clear read cache on mutations
-        this._cache = {};
+        this.clearStorageCache();
       }
 
       return json.data;
@@ -75,16 +126,16 @@ const Api = {
   },
 
   // Members & Packages
-  async getMembers(gymId = CONFIG.GYM_ID) {
-    return this.call('getMembers', { gymId });
+  async getMembers(gymId = CONFIG.GYM_ID, forceRefresh = false, onUpdate = null) {
+    return this.call('getMembers', { gymId }, forceRefresh, onUpdate);
   },
 
   async getMemberProfile(memberId) {
     return this.call('getMemberProfile', { memberId });
   },
 
-  async getPackages(gymId = CONFIG.GYM_ID) {
-    return this.call('getPackages', { gymId });
+  async getPackages(gymId = CONFIG.GYM_ID, forceRefresh = false, onUpdate = null) {
+    return this.call('getPackages', { gymId }, forceRefresh, onUpdate);
   },
 
   async savePackage(payload) {
@@ -100,21 +151,21 @@ const Api = {
     return this.call('scanQR', { memberId, gymId });
   },
 
-  async getAttendance(gymId = CONFIG.GYM_ID, memberId = null) {
-    return this.call('getAttendance', { gymId, memberId });
+  async getAttendance(gymId = CONFIG.GYM_ID, memberId = null, forceRefresh = false) {
+    return this.call('getAttendance', { gymId, memberId }, forceRefresh);
   },
 
-  async getInactiveMembers(gymId = CONFIG.GYM_ID, thresholdDays = 3) {
-    return this.call('getInactiveMembers', { gymId, thresholdDays });
+  async getInactiveMembers(gymId = CONFIG.GYM_ID, thresholdDays = 3, forceRefresh = false) {
+    return this.call('getInactiveMembers', { gymId, thresholdDays }, forceRefresh);
   },
 
-  async getExpiringMembers(gymId = CONFIG.GYM_ID, thresholdDays = 3) {
-    return this.call('getExpiringMembers', { gymId, thresholdDays });
+  async getExpiringMembers(gymId = CONFIG.GYM_ID, thresholdDays = 3, forceRefresh = false) {
+    return this.call('getExpiringMembers', { gymId, thresholdDays }, forceRefresh);
   },
 
   // Store & Products
-  async getProducts(gymId = CONFIG.GYM_ID) {
-    return this.call('getProducts', { gymId });
+  async getProducts(gymId = CONFIG.GYM_ID, forceRefresh = false, onUpdate = null) {
+    return this.call('getProducts', { gymId }, forceRefresh, onUpdate);
   },
 
   async saveProduct(payload) {
@@ -130,8 +181,8 @@ const Api = {
   },
 
   // Payments
-  async getPayments(gymId = CONFIG.GYM_ID) {
-    return this.call('getPayments', { gymId });
+  async getPayments(gymId = CONFIG.GYM_ID, forceRefresh = false, onUpdate = null) {
+    return this.call('getPayments', { gymId }, forceRefresh, onUpdate);
   },
 
   async markPaymentAsPaid(paymentId, gymId = CONFIG.GYM_ID) {
@@ -143,8 +194,8 @@ const Api = {
   },
 
   // Expenses
-  async getExpenses(gymId = CONFIG.GYM_ID) {
-    return this.call('getExpenses', { gymId });
+  async getExpenses(gymId = CONFIG.GYM_ID, forceRefresh = false, onUpdate = null) {
+    return this.call('getExpenses', { gymId }, forceRefresh, onUpdate);
   },
 
   async saveExpense(payload) {
@@ -156,25 +207,25 @@ const Api = {
   },
 
   // SaaS Subscription
-  async getSubscriptionPlans() {
-    return this.call('getSubscriptionPlans');
+  async getSubscriptionPlans(forceRefresh = false, onUpdate = null) {
+    return this.call('getSubscriptionPlans', {}, forceRefresh, onUpdate);
   },
 
-  async getGymSubscription(gymId = CONFIG.GYM_ID) {
-    return this.call('getGymSubscription', { gymId });
+  async getGymSubscription(gymId = CONFIG.GYM_ID, forceRefresh = false, onUpdate = null) {
+    return this.call('getGymSubscription', { gymId }, forceRefresh, onUpdate);
   },
 
   async renewSubscription(gymId = CONFIG.GYM_ID, planId, paymentId = 'pay_renew') {
     return this.call('renewSubscription', { gymId, planId, paymentId });
   },
 
-  // Batch Data Fetchers (Quota Optimized)
-  async getDashboardData(gymId = CONFIG.GYM_ID, forceRefresh = false) {
-    return this.call('getDashboardData', { gymId }, forceRefresh);
+  // Batch Data Fetchers (Quota Optimized & Fast Cache)
+  async getDashboardData(gymId = CONFIG.GYM_ID, forceRefresh = false, onUpdate = null) {
+    return this.call('getDashboardData', { gymId }, forceRefresh, onUpdate);
   },
 
-  async getStorePageData(gymId = CONFIG.GYM_ID, forceRefresh = false) {
-    return this.call('getStorePageData', { gymId }, forceRefresh);
+  async getStorePageData(gymId = CONFIG.GYM_ID, forceRefresh = false, onUpdate = null) {
+    return this.call('getStorePageData', { gymId }, forceRefresh, onUpdate);
   },
 
   // Database Initialization
@@ -186,3 +237,4 @@ const Api = {
 if (typeof window !== 'undefined') {
   window.Api = Api;
 }
+

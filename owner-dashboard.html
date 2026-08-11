@@ -379,6 +379,7 @@
   <script src="js/auth.js"></script>
   <script src="js/pwa.js"></script>
   <script src="js/owner-sidebar.js"></script>
+  <script src="js/owner-router.js"></script>
   <script>
     Auth.requireAuth('OWNER');
     OwnerSidebar.render('dashboard');
@@ -393,13 +394,8 @@
 
     async function loadDashboardMetrics(forceRefresh = false) {
       try {
-        // Fetch raw batch data in single API call
-        const dashData = await Api.getDashboardData(CONFIG.GYM_ID, forceRefresh).catch(err => {
-          console.error('Failed to load dashboard batch data:', err);
-          return null;
-        });
-
-        if (dashData) {
+        const renderData = (dashData) => {
+          if (!dashData) return;
           globalMembers = Array.isArray(dashData.members) ? dashData.members : [];
           globalInactives = Array.isArray(dashData.inactiveMembers) ? dashData.inactiveMembers : [];
           globalPayments = Array.isArray(dashData.payments) ? dashData.payments : [];
@@ -407,6 +403,33 @@
           globalPackages = Array.isArray(dashData.packages) ? dashData.packages : [];
           globalSubscription = dashData.subscription || null;
           globalPlans = Array.isArray(dashData.plans) ? dashData.plans : [];
+
+          // Populate Gate QR Card
+          const gateQrImg = document.getElementById('gate-qr-img');
+          const gateGymName = document.getElementById('gate-gym-name');
+          if (gateQrImg) gateQrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(CONFIG.GYM_ID)}`;
+          if (gateGymName) gateGymName.textContent = `${CONFIG.GYM_NAME} Gate`;
+
+          // Process SaaS Subscription status
+          handleSubscriptionState(globalSubscription, globalPlans);
+
+          // Process Financials & Metrics
+          calculateFinancials();
+          renderActiveMembersTable();
+          renderLeaveMembersTable();
+          renderPackagesGrid();
+        };
+
+        // Fetch raw batch data in single API call with Stale-While-Revalidate
+        const dashData = await Api.getDashboardData(CONFIG.GYM_ID, forceRefresh, (freshData) => {
+          renderData(freshData);
+        }).catch(err => {
+          console.error('Failed to load dashboard batch data:', err);
+          return null;
+        });
+
+        if (dashData) {
+          renderData(dashData);
         }
 
         // Populate Gate QR Card

@@ -226,6 +226,7 @@
   <script src="js/auth.js"></script>
   <script src="js/pwa.js"></script>
   <script src="js/owner-sidebar.js"></script>
+  <script src="js/owner-router.js"></script>
   <script>
     Auth.requireAuth('OWNER');
     OwnerSidebar.render('expenses');
@@ -233,7 +234,8 @@
     let allExpenses = [];
 
     // Default today date
-    document.getElementById('exp-date').value = new Date().toISOString().split('T')[0];
+    const dateInput = document.getElementById('exp-date');
+    if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
 
     async function loadExpenses() {
       const lockOverlay = document.getElementById('expenses-lock-overlay');
@@ -253,11 +255,16 @@
           if (addBtn) addBtn.classList.remove('hidden');
         }
 
-        const raw = await Api.getExpenses(CONFIG.GYM_ID);
-        allExpenses = Array.isArray(raw) ? raw : [];
+        const renderExpensesList = (raw) => {
+          allExpenses = Array.isArray(raw) ? raw : [];
+          calculateKPIs(allExpenses);
+          renderTable(allExpenses);
+        };
 
-        calculateKPIs(allExpenses);
-        renderTable(allExpenses);
+        const raw = await Api.getExpenses(CONFIG.GYM_ID, false, (freshData) => {
+          renderExpensesList(freshData);
+        });
+        if (raw) renderExpensesList(raw);
 
       } catch (err) {
         console.warn('Expenses load error:', err);

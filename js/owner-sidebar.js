@@ -36,8 +36,8 @@ const OwnerSidebar = {
             </button>
           </div>
 
-          <!-- Navigation Links -->
-          <nav class="px-4 py-4 space-y-1">
+      <!-- Navigation Links -->
+          <nav class="px-4 py-4 space-y-1" id="owner-sidebar-nav">
             ${navItems.map(item => {
               const isActive = item.key === activeKey;
               const activeClasses = isActive
@@ -45,7 +45,7 @@ const OwnerSidebar = {
                 : 'text-gray-400 hover:bg-gray-800/60 hover:text-gray-200 font-medium';
 
               return `
-                <a href="${item.url}" class="flex items-center justify-between px-4 py-2.5 rounded-xl transition-all text-xs sm:text-sm ${activeClasses}">
+                <a href="${item.url}" data-key="${item.key}" data-spa-link="true" onclick="OwnerSidebar.handleNavClick(event, '${item.url}')" class="sidebar-nav-item flex items-center justify-between px-4 py-2.5 rounded-xl transition-all text-xs sm:text-sm ${activeClasses}">
                   <div class="flex items-center space-x-3">
                     <span class="text-lg">${item.icon}</span>
                     <span>${item.label}</span>
@@ -112,6 +112,31 @@ const OwnerSidebar = {
       if (closeBtn && sidebar) closeBtn.addEventListener('click', closeMenu);
       if (backdrop) backdrop.addEventListener('click', closeMenu);
     }
+  },
+
+  handleNavClick(e, url) {
+    if (typeof OwnerRouter !== 'undefined') {
+      e.preventDefault();
+      // Close mobile menu drawer if open
+      const sidebar = document.getElementById('owner-sidebar');
+      const backdrop = document.getElementById('mobile-sidebar-backdrop');
+      if (sidebar) sidebar.classList.add('-translate-x-full');
+      if (backdrop) backdrop.classList.add('hidden');
+
+      OwnerRouter.navigateTo(url);
+    }
+  },
+
+  setActive(activeKey) {
+    const links = document.querySelectorAll('#owner-sidebar-nav a.sidebar-nav-item');
+    links.forEach(link => {
+      const key = link.getAttribute('data-key');
+      if (key === activeKey) {
+        link.className = 'sidebar-nav-item flex items-center justify-between px-4 py-2.5 rounded-xl transition-all text-xs sm:text-sm bg-gradient-to-r from-emerald-500/20 to-cyan-500/10 text-emerald-400 border-l-4 border-emerald-500 font-semibold';
+      } else {
+        link.className = 'sidebar-nav-item flex items-center justify-between px-4 py-2.5 rounded-xl transition-all text-xs sm:text-sm text-gray-400 hover:bg-gray-800/60 hover:text-gray-200 font-medium';
+      }
+    });
   }
 };
 

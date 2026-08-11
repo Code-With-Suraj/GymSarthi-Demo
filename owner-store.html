@@ -140,6 +140,7 @@
   <script src="js/auth.js"></script>
   <script src="js/pwa.js"></script>
   <script src="js/owner-sidebar.js"></script>
+  <script src="js/owner-router.js"></script>
   <script>
     Auth.requireAuth('OWNER');
     OwnerSidebar.render('store');
@@ -151,35 +152,43 @@
       const tbody = document.getElementById('products-table-body');
 
       try {
-        const storeData = await Api.getStorePageData(CONFIG.GYM_ID);
-        const sub = storeData.subscription || {};
-        const products = Array.isArray(storeData.products) ? storeData.products : [];
+        const renderStore = (storeData) => {
+          if (!storeData) return;
+          const sub = storeData.subscription || {};
+          const products = Array.isArray(storeData.products) ? storeData.products : [];
 
-        if (!sub.hasStore || !sub.hasActiveSubscription) {
-          if (lockOverlay) lockOverlay.classList.remove('hidden');
-          if (storeContent) storeContent.classList.add('hidden');
-          if (addBtn) addBtn.classList.add('hidden');
-        } else {
-          if (lockOverlay) lockOverlay.classList.add('hidden');
-          if (storeContent) storeContent.classList.remove('hidden');
-          if (addBtn) addBtn.classList.remove('hidden');
-
-          if (products.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-gray-500 text-sm">No products found in store. Click "Add New Product" to stock items.</td></tr>`;
+          if (!sub.hasStore || !sub.hasActiveSubscription) {
+            if (lockOverlay) lockOverlay.classList.remove('hidden');
+            if (storeContent) storeContent.classList.add('hidden');
+            if (addBtn) addBtn.classList.add('hidden');
           } else {
-            tbody.innerHTML = products.map(p => `
-              <tr class="hover:bg-gray-900/40">
-                <td class="py-3.5 px-4 font-bold text-white">${p.name}</td>
-                <td class="py-3.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-400">${p.category || 'General'}</span></td>
-                <td class="py-3.5 px-4 font-bold text-emerald-400">₹${Number(p.price || 0).toLocaleString('en-IN')}</td>
-                <td class="py-3.5 px-4 font-semibold text-gray-300">${p.stock_quantity || p.stock || 0} units</td>
-                <td class="py-3.5 px-4 text-right">
-                  <button onclick="deleteProd('${p.product_id}')" class="text-rose-400 hover:text-rose-300 font-bold text-xs p-1">Delete</button>
-                </td>
-              </tr>
-            `).join('');
+            if (lockOverlay) lockOverlay.classList.add('hidden');
+            if (storeContent) storeContent.classList.remove('hidden');
+            if (addBtn) addBtn.classList.remove('hidden');
+
+            if (!tbody) return;
+            if (products.length === 0) {
+              tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-gray-500 text-sm">No products found in store. Click "Add New Product" to stock items.</td></tr>`;
+            } else {
+              tbody.innerHTML = products.map(p => `
+                <tr class="hover:bg-gray-900/40">
+                  <td class="py-3.5 px-4 font-bold text-white">${p.name}</td>
+                  <td class="py-3.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-400">${p.category || 'General'}</span></td>
+                  <td class="py-3.5 px-4 font-bold text-emerald-400">₹${Number(p.price || 0).toLocaleString('en-IN')}</td>
+                  <td class="py-3.5 px-4 font-semibold text-gray-300">${p.stock_quantity || p.stock || 0} units</td>
+                  <td class="py-3.5 px-4 text-right">
+                    <button onclick="deleteProd('${p.product_id}')" class="text-rose-400 hover:text-rose-300 font-bold text-xs p-1">Delete</button>
+                  </td>
+                </tr>
+              `).join('');
+            }
           }
-        }
+        };
+
+        const storeData = await Api.getStorePageData(CONFIG.GYM_ID, false, (freshData) => {
+          renderStore(freshData);
+        });
+        if (storeData) renderStore(storeData);
       } catch (err) {
         console.warn('Store page load error:', err);
       }
