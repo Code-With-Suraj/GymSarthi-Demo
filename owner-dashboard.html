@@ -667,33 +667,30 @@
       try {
         Utils.showToast(`Initiating Razorpay payment for ${title}...`, 'info');
 
-        const options = {
-          key: CONFIG.RAZORPAY_KEY_ID || 'rzp_live_placeholder',
-          amount: amount * 100, // in paise
-          currency: 'INR',
-          name: 'GymSarthi Automation',
-          description: `SaaS Subscription: ${title}`,
-          handler: async function (response) {
-            Utils.showToast('Payment successful! Renewing subscription on server...', 'info');
-            const res = await Api.renewSubscription(CONFIG.GYM_ID, planId, response.razorpay_payment_id || 'pay_demo_success');
-            Utils.showToast(res.message || 'Subscription renewed! 🎉', 'success');
-            closeRenewModal();
-            loadDashboardMetrics(true);
-          },
-          prefill: {
-            name: CONFIG.GYM_NAME,
-            contact: '9876543210'
-          },
-          theme: {
-            color: '#10B981'
-          }
-        };
-
-        if (typeof Razorpay !== 'undefined') {
-          const rzp = new Razorpay(options);
-          rzp.open();
+        if (typeof RazorpayHandler !== 'undefined') {
+          RazorpayHandler.openCheckout({
+            amount: amount,
+            isSubscription: true,
+            description: `SaaS Subscription: ${title}`,
+            customerName: CONFIG.GYM_NAME || 'Gym Owner',
+            customerMobile: '9876543210',
+            onSuccess: async (paymentId) => {
+              Utils.showToast('Payment successful! Renewing subscription on server...', 'info');
+              try {
+                const res = await Api.renewSubscription(CONFIG.GYM_ID, planId, paymentId);
+                Utils.showToast(res.message || 'Subscription renewed! 🎉', 'success');
+                closeRenewModal();
+                loadDashboardMetrics(true);
+              } catch (e) {
+                Utils.showToast(e.message || 'Subscription renewal failed', 'error');
+              }
+            },
+            onFailure: (errMsg) => {
+              Utils.showToast(errMsg || 'Payment cancelled.', 'warning');
+            }
+          });
         } else {
-          // Fallback if Razorpay CDN blocked or offline
+          // Fallback if RazorpayHandler SDK script blocked or offline
           const confirmPayment = confirm(`Simulate Razorpay payment of ₹${amount} for ${title}?`);
           if (confirmPayment) {
             const res = await Api.renewSubscription(CONFIG.GYM_ID, planId, 'pay_simulated_' + Date.now());
@@ -703,7 +700,8 @@
           }
         }
       } catch (err) {
-        Utils.showToast(err.message || 'Payment failed', 'error');
+        console.error('Payment handler error:', err);
+        Utils.showToast('Failed to start payment checkout.', 'error');
       }
     }
 
