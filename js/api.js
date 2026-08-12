@@ -276,6 +276,17 @@ const Api = {
     return this.call('getMemberProfile', { memberId, gymId });
   },
 
+  async getGymSettings(gymId = CONFIG.GYM_ID, forceRefresh = false) {
+    const res = await this.call('getGymSettings', { gymId }, forceRefresh);
+    if (res && res.razorpay_key_id && !res.razorpay_key_id.includes('placeholder')) {
+      CONFIG.GYM_RAZORPAY_KEY_ID = res.razorpay_key_id;
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('gym_razorpay_key_id', res.razorpay_key_id);
+      }
+    }
+    return res;
+  },
+
   // ─── PACKAGES ───────────────────────────────────────────────────────
   async getPackages(gymId = CONFIG.GYM_ID, forceRefresh = false, onUpdate = null) {
     return this.call('getPackages', { gymId }, forceRefresh, onUpdate);
@@ -368,11 +379,23 @@ const Api = {
 
   // ─── SAAS SUBSCRIPTION ──────────────────────────────────────────────
   async getSubscriptionPlans(forceRefresh = false, onUpdate = null) {
-    return this.call('getSubscriptionPlans', {}, forceRefresh, onUpdate);
+    const res = await this.call('getSubscriptionPlans', {}, forceRefresh, onUpdate);
+    const key = (res && res.platformRazorpayKeyId) || (res && res.data && res.data.platformRazorpayKeyId);
+    if (key && !key.includes('placeholder')) {
+      CONFIG.PLATFORM_RAZORPAY_KEY_ID = key;
+      if (typeof localStorage !== 'undefined') localStorage.setItem('platform_razorpay_key_id', key);
+    }
+    return res;
   },
 
   async getGymSubscription(gymId = CONFIG.GYM_ID, forceRefresh = false, onUpdate = null) {
-    return this.call('getGymSubscription', { gymId }, forceRefresh, onUpdate);
+    const res = await this.call('getGymSubscription', { gymId }, forceRefresh, onUpdate);
+    const key = (res && res.platformRazorpayKeyId);
+    if (key && !key.includes('placeholder')) {
+      CONFIG.PLATFORM_RAZORPAY_KEY_ID = key;
+      if (typeof localStorage !== 'undefined') localStorage.setItem('platform_razorpay_key_id', key);
+    }
+    return res;
   },
 
   async renewSubscription(gymId = CONFIG.GYM_ID, planId, paymentId = 'pay_renew') {

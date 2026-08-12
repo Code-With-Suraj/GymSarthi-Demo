@@ -31,9 +31,33 @@ const RazorpayHandler = {
     // Pick correct Razorpay Key ID
     // Subscription -> Platform Account
     // Member/Store -> Gym Owner Account
-    const keyId = isSubscription
+    let keyId = isSubscription
       ? (CONFIG.PLATFORM_RAZORPAY_KEY_ID || 'rzp_live_platform_key_placeholder')
       : (CONFIG.GYM_RAZORPAY_KEY_ID || 'rzp_live_gym_key_placeholder');
+
+    // If key is missing or is placeholder, fetch real key from backend sheets!
+    if (typeof Api !== 'undefined') {
+      try {
+        if (isSubscription && (!keyId || keyId.includes('placeholder'))) {
+          const subData = await Api.getSubscriptionPlans();
+          const pKey = (subData && subData.platformRazorpayKeyId) || (subData && subData.data && subData.data.platformRazorpayKeyId);
+          if (pKey && !pKey.includes('placeholder')) {
+            CONFIG.PLATFORM_RAZORPAY_KEY_ID = pKey;
+            keyId = pKey;
+            if (typeof localStorage !== 'undefined') localStorage.setItem('platform_razorpay_key_id', pKey);
+          }
+        } else if (!isSubscription && (!keyId || keyId.includes('placeholder'))) {
+          const settings = await Api.getGymSettings();
+          if (settings && settings.razorpay_key_id && !settings.razorpay_key_id.includes('placeholder')) {
+            CONFIG.GYM_RAZORPAY_KEY_ID = settings.razorpay_key_id;
+            keyId = settings.razorpay_key_id;
+            if (typeof localStorage !== 'undefined') localStorage.setItem('gym_razorpay_key_id', settings.razorpay_key_id);
+          }
+        }
+      } catch (err) {
+        console.warn('Could not fetch Razorpay gateway keys from backend:', err);
+      }
+    }
 
     const merchantName = isSubscription ? 'GymSarthi SaaS Platform' : CONFIG.GYM_NAME;
     const themeColor = isSubscription ? '#06B6D4' : '#10B981';

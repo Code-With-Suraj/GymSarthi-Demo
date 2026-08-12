@@ -344,6 +344,9 @@
         const memberData = profile || user;
         window.currentMemberProfile = memberData;
 
+        // Prefetch gym settings for real Razorpay Key ID
+        Api.getGymSettings().catch(() => {});
+
         Utils.setElementText('pkg-name', memberData.package_name || 'Standard Membership');
         Utils.setElementText('pkg-expiry', memberData.expiry_date ? `Valid until ${Utils.formatDate(memberData.expiry_date)}` : 'Active');
 
