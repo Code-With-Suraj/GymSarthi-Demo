@@ -965,9 +965,11 @@
           overviewTbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-gray-500">No gate check-in logs recorded yet. Members can scan QR at gym entrance.</td></tr>`;
         } else {
           overviewTbody.innerHTML = previewLogs.map(a => {
-            const inT = a.check_in_time || a.in_time || '--';
-            const outT = a.check_out_time || a.out_time || (a.status === 'CHECKED_IN' ? 'Active' : '--');
-            const isInside = a.status === 'CHECKED_IN' || outT === 'Active';
+            const rawIn = a.check_in_time || a.in_time;
+            const rawOut = a.check_out_time || a.out_time;
+            const inT = Utils.formatTime(rawIn) || '--';
+            const isInside = a.status === 'CHECKED_IN' || rawOut === 'Active' || !rawOut;
+            const outT = isInside ? 'Inside' : (Utils.formatTime(rawOut) || '--');
             return `
               <tr class="hover:bg-gray-900/40">
                 <td class="py-2.5 px-2 font-bold text-white">
@@ -1021,9 +1023,11 @@
       }
 
       tbody.innerHTML = logs.slice(0, 50).map(a => {
-        const inT = a.check_in_time || a.in_time || '--';
-        const outT = a.check_out_time || a.out_time || (a.status === 'CHECKED_IN' ? 'Active' : '--');
-        const isInside = a.status === 'CHECKED_IN' || outT === 'Active';
+        const rawIn = a.check_in_time || a.in_time;
+        const rawOut = a.check_out_time || a.out_time;
+        const inT = Utils.formatTime(rawIn) || '--';
+        const isInside = a.status === 'CHECKED_IN' || rawOut === 'Active' || !rawOut;
+        const outT = isInside ? 'Active' : (Utils.formatTime(rawOut) || '--');
         const duration = a.duration_minutes ? `${a.duration_minutes} mins` : (isInside ? 'In Session ⏱️' : '--');
         const memberObj = globalMembers.find(m => String(m.member_id).trim() === String(a.member_id).trim()) || {};
         const memberMobile = memberObj.mobile || a.mobile || '';

@@ -4,17 +4,56 @@
  */
 
 const RazorpayHandler = {
+  _preloadPromise: null,
+
+  /**
+   * Eagerly pre-fetches and caches Razorpay Gateway keys in the background
+   * so checkout opens instantly without blocking API delays.
+   */
+  async preloadKeys() {
+    if (this._preloadPromise) return this._preloadPromise;
+    this._preloadPromise = (async () => {
+      if (typeof Api === 'undefined') return;
+      try {
+        const gymKey = (typeof CONFIG !== 'undefined' && CONFIG.GYM_RAZORPAY_KEY_ID) || (typeof localStorage !== 'undefined' && localStorage.getItem('gym_razorpay_key_id')) || '';
+        const platformKey = (typeof CONFIG !== 'undefined' && CONFIG.PLATFORM_RAZORPAY_KEY_ID) || (typeof localStorage !== 'undefined' && localStorage.getItem('platform_razorpay_key_id')) || '';
+
+        const needGymKey = !gymKey || gymKey.includes('placeholder');
+        const needPlatformKey = !platformKey || platformKey.includes('placeholder');
+
+        const tasks = [];
+        if (needGymKey) {
+          tasks.push(
+            Api.getGymSettings().then(settings => {
+              if (settings && settings.razorpay_key_id && !settings.razorpay_key_id.includes('placeholder')) {
+                if (typeof CONFIG !== 'undefined') CONFIG.GYM_RAZORPAY_KEY_ID = settings.razorpay_key_id;
+                if (typeof localStorage !== 'undefined') localStorage.setItem('gym_razorpay_key_id', settings.razorpay_key_id);
+              }
+            }).catch(() => {})
+          );
+        }
+        if (needPlatformKey) {
+          tasks.push(
+            Api.getSubscriptionPlans().then(subData => {
+              const pKey = (subData && subData.platformRazorpayKeyId) || (subData && subData.data && subData.data.platformRazorpayKeyId);
+              if (pKey && !pKey.includes('placeholder')) {
+                if (typeof CONFIG !== 'undefined') CONFIG.PLATFORM_RAZORPAY_KEY_ID = pKey;
+                if (typeof localStorage !== 'undefined') localStorage.setItem('platform_razorpay_key_id', pKey);
+              }
+            }).catch(() => {})
+          );
+        }
+        await Promise.all(tasks);
+      } catch (err) {
+        console.warn('Razorpay preloading error:', err);
+      }
+    })();
+    return this._preloadPromise;
+  },
+
   /**
    * Open payment checkout
    * @param {Object} opts
-   * opts.amount - Amount in INR
-   * opts.isSubscription - boolean (true = SaaS Platform subscription, false = Gym membership/store)
-   * opts.description - Text description
-   * opts.customerName - Name of payer
-   * opts.customerMobile - Mobile of payer
-   * opts.customerEmail - Email of payer
-   * opts.onSuccess - callback(paymentId)
-   * opts.onFailure - callback(errorMessage)
    */
   async openCheckout(opts) {
     const {
@@ -28,35 +67,17 @@ const RazorpayHandler = {
       onFailure
     } = opts;
 
-    // Pick correct Razorpay Key ID
-    // Subscription -> Platform Account
-    // Member/Store -> Gym Owner Account
+    // Pick pre-cached key if available
     let keyId = isSubscription
-      ? (CONFIG.PLATFORM_RAZORPAY_KEY_ID || '')
-      : (CONFIG.GYM_RAZORPAY_KEY_ID || '');
+      ? (typeof CONFIG !== 'undefined' ? CONFIG.PLATFORM_RAZORPAY_KEY_ID : '')
+      : (typeof CONFIG !== 'undefined' ? CONFIG.GYM_RAZORPAY_KEY_ID : '');
 
-    // If key is missing or is placeholder, fetch real key from backend sheets!
-    if (typeof Api !== 'undefined') {
-      try {
-        if (isSubscription && (!keyId || keyId.includes('placeholder'))) {
-          const subData = await Api.getSubscriptionPlans();
-          const pKey = (subData && subData.platformRazorpayKeyId) || (subData && subData.data && subData.data.platformRazorpayKeyId);
-          if (pKey && !pKey.includes('placeholder')) {
-            CONFIG.PLATFORM_RAZORPAY_KEY_ID = pKey;
-            keyId = pKey;
-            if (typeof localStorage !== 'undefined') localStorage.setItem('platform_razorpay_key_id', pKey);
-          }
-        } else if (!isSubscription && (!keyId || keyId.includes('placeholder'))) {
-          const settings = await Api.getGymSettings();
-          if (settings && settings.razorpay_key_id && !settings.razorpay_key_id.includes('placeholder')) {
-            CONFIG.GYM_RAZORPAY_KEY_ID = settings.razorpay_key_id;
-            keyId = settings.razorpay_key_id;
-            if (typeof localStorage !== 'undefined') localStorage.setItem('gym_razorpay_key_id', settings.razorpay_key_id);
-          }
-        }
-      } catch (err) {
-        console.warn('Could not fetch Razorpay gateway keys from backend:', err);
-      }
+    // If key is missing/placeholder, await existing background preload promise
+    if (!keyId || keyId.includes('placeholder')) {
+      await this.preloadKeys();
+      keyId = isSubscription
+        ? (typeof CONFIG !== 'undefined' ? CONFIG.PLATFORM_RAZORPAY_KEY_ID : '')
+        : (typeof CONFIG !== 'undefined' ? CONFIG.GYM_RAZORPAY_KEY_ID : '');
     }
 
     // If key is still placeholder or missing, prompt user to enter key or use simulated flow
@@ -158,4 +179,8 @@ const RazorpayHandler = {
 
 if (typeof window !== 'undefined') {
   window.RazorpayHandler = RazorpayHandler;
+  // Auto-preload keys in background when script loads
+  setTimeout(() => {
+    RazorpayHandler.preloadKeys().catch(() => {});
+  }, 50);
 }

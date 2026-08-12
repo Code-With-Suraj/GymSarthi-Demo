@@ -589,8 +589,10 @@
 
       if (todayStatus) {
         if (todayLog) {
-          const inTime = todayLog.check_in_time || todayLog.in_time || '';
-          const outTime = todayLog.check_out_time || todayLog.out_time || '';
+          const rawIn = todayLog.check_in_time || todayLog.in_time;
+          const rawOut = todayLog.check_out_time || todayLog.out_time;
+          const inTime = Utils.formatTime(rawIn);
+          const outTime = Utils.formatTime(rawOut);
           if (outTime && outTime !== 'Active' && outTime !== '--') {
             todayStatus.innerHTML = `<span class="text-cyan-400 font-bold">Checked Out at ${outTime}${todayLog.duration_minutes ? ` (${todayLog.duration_minutes} mins)` : ''}</span>`;
           } else if (inTime && inTime !== '--') {
@@ -604,15 +606,18 @@
       }
 
       tbody.innerHTML = safeLogs.slice(0, 15).map(log => {
-        const inTime = log.check_in_time || log.in_time || '--';
-        const outTime = log.check_out_time || log.out_time || (log.status === 'CHECKED_IN' ? 'Active' : '--');
+        const rawIn = log.check_in_time || log.in_time;
+        const rawOut = log.check_out_time || log.out_time;
+        const inTime = Utils.formatTime(rawIn) || '--';
+        const isInside = log.status === 'CHECKED_IN' || rawOut === 'Active' || !rawOut;
+        const outTime = isInside ? 'Active' : (Utils.formatTime(rawOut) || '--');
         const isCompleted = log.status === 'COMPLETED' || (outTime && outTime !== 'Active' && outTime !== '--');
         const statusLabel = log.status || (isCompleted ? 'COMPLETED' : 'CHECKED_IN');
         return `
           <tr class="hover:bg-gray-900/40">
             <td class="py-3 px-2 font-medium text-gray-200">${Utils.formatDate(log.date)}</td>
             <td class="py-3 px-2 text-emerald-400 font-semibold">${inTime}</td>
-            <td class="py-3 px-2 ${outTime === 'Active' ? 'text-amber-400' : 'text-cyan-400'} font-semibold">${outTime}</td>
+            <td class="py-3 px-2 ${isInside ? 'text-amber-400' : 'text-cyan-400'} font-semibold">${outTime}</td>
             <td class="py-3 px-2">
               <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isCompleted ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">
                 ${statusLabel}

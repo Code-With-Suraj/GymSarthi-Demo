@@ -243,6 +243,10 @@
     }
 
     loadPackages();
+    // Prefetch Razorpay Gateway keys eagerly in background for 0ms payment launch
+    if (typeof RazorpayHandler !== 'undefined') {
+      RazorpayHandler.preloadKeys().catch(() => {});
+    }
 
     // Submit Onboarding Flow
     document.getElementById('onboarding-form').addEventListener('submit', async (e) => {

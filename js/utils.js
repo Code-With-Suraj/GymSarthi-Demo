@@ -106,7 +106,58 @@ const Utils = {
 
   formatTime(timeStr) {
     if (!timeStr) return '';
-    return timeStr;
+    const str = String(timeStr).trim();
+    if (!str || str === '--' || str.toLowerCase() === 'active' || str.toLowerCase() === 'inside') {
+      return str;
+    }
+
+    // Already 12h format (e.g. "11:51 AM", "5:30 PM")
+    if (/\d{1,2}:\d{2}\s*(AM|PM)/i.test(str)) {
+      return str;
+    }
+
+    let hh = null;
+    let mm = null;
+
+    // ISO timestamp like "1899-12-30T11:51:50.000Z" or "2026-08-12T11:51:50.000Z"
+    if (str.includes('T')) {
+      const timePart = str.split('T')[1];
+      if (timePart) {
+        const parts = timePart.split(':');
+        if (parts.length >= 2) {
+          hh = parseInt(parts[0], 10);
+          mm = parseInt(parts[1], 10);
+        }
+      }
+    }
+
+    // 24h format like "11:51", "17:30:00"
+    if (hh === null && str.includes(':')) {
+      const parts = str.split(':');
+      if (parts.length >= 2 && !isNaN(parseInt(parts[0], 10))) {
+        hh = parseInt(parts[0], 10);
+        mm = parseInt(parts[1], 10);
+      }
+    }
+
+    // Fallback JavaScript Date parsing
+    if (hh === null || isNaN(hh) || isNaN(mm)) {
+      const d = new Date(str);
+      if (!isNaN(d.getTime())) {
+        hh = d.getHours();
+        mm = d.getMinutes();
+      }
+    }
+
+    if (hh === null || isNaN(hh) || isNaN(mm)) {
+      return str;
+    }
+
+    const ampm = hh >= 12 ? 'PM' : 'AM';
+    let h12 = hh % 12;
+    if (h12 === 0) h12 = 12;
+    const mmStr = String(mm).padStart(2, '0');
+    return `${h12}:${mmStr} ${ampm}`;
   },
 
   // Clean mobile string
