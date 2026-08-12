@@ -379,6 +379,11 @@ const Api = {
     return this.call('renewSubscription', { gymId, planId, paymentId });
   },
 
+  // ─── MEMBER MEMBERSHIP RENEWAL ──────────────────────────────────
+  async renewMembership(payload) {
+    return this.call('renewMembership', payload);
+  },
+
   // ─── DATABASE INITIALIZATION ────────────────────────────────────────
   async initializeDatabase() {
     return this.call('initializeDatabase');

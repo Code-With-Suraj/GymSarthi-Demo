@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Member Dashboard — GymSarthi</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Razorpay SDK -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <link rel="stylesheet" href="css/app.css">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
@@ -46,7 +48,7 @@
 
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
         <div>
-          <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active Member</span>
+          <span id="member-status-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active Member</span>
           <h1 id="welcome-title" class="text-2xl sm:text-3xl font-black text-white mt-1">Hello, Athlete! 👋</h1>
           <p id="today-status-text" class="text-sm text-gray-400 mt-1">Status: Checking gate status...</p>
         </div>
@@ -83,6 +85,21 @@
         </div>
         <p id="attendance-streak" class="text-2xl font-black text-amber-400 mt-2">0 Days</p>
         <p class="text-xs text-gray-500 mt-1">Keep visiting to maintain workout consistency!</p>
+      </div>
+
+      <!-- Membership Renewal Card (dynamic visibility — shown when expiring/expired) -->
+      <div id="renew-card" class="glass-card p-5 rounded-2xl border-amber-500/40 bg-gradient-to-r from-amber-950/20 via-gray-900 to-gray-900 sm:col-span-2 lg:col-span-1 flex-col justify-between hidden">
+        <div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-400">🔄 Renew Membership</span>
+            <span class="text-lg">⚡</span>
+          </div>
+          <p id="renew-card-text" class="text-xs text-gray-300 mt-2">Your membership is expiring soon. Renew now to continue gym access!</p>
+        </div>
+        <button onclick="openRenewModal()" class="mt-3 w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-gray-950 font-black text-xs flex items-center justify-center space-x-1.5 shadow-lg shadow-amber-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]">
+          <span>Renew Now</span>
+          <span>🚀</span>
+        </button>
       </div>
 
       <!-- Gym Store Shortcut -->
@@ -125,6 +142,60 @@
     </div>
   </main>
 
+  <!-- ═══ MEMBERSHIP RENEWAL MODAL ═══ -->
+  <div id="renew-modal" class="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 backdrop-blur-sm hidden">
+    <div class="bg-[#0F1420] border border-gray-800 rounded-3xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between p-5 border-b border-gray-800">
+        <div>
+          <h2 class="text-lg font-extrabold text-white flex items-center space-x-2">
+            <span>🔄</span>
+            <span>Renew Membership</span>
+          </h2>
+          <p class="text-xs text-gray-400 mt-0.5">Select a plan and payment method to continue.</p>
+        </div>
+        <button onclick="closeRenewModal()" class="text-gray-400 hover:text-white p-2 text-xl font-bold">✕</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5 space-y-5">
+        <!-- Package Selection -->
+        <div>
+          <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Select Package</h3>
+          <div id="renew-packages-loading" class="text-center py-4 text-sm text-gray-400">Loading packages...</div>
+          <div id="renew-packages-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 hidden"></div>
+        </div>
+
+        <!-- Payment Method -->
+        <div>
+          <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Payment Method</h3>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="cursor-pointer p-3.5 rounded-2xl bg-gray-900/90 border-2 border-emerald-500 flex items-center space-x-2.5 transition-all" id="renew-pay-online-box">
+              <input type="radio" name="renewPaymentMethod" value="ONLINE" checked class="text-emerald-500 accent-emerald-500">
+              <div>
+                <p class="font-bold text-xs text-white">💳 Online Pay</p>
+                <p class="text-[10px] text-gray-400">UPI, Cards, NetBanking</p>
+              </div>
+            </label>
+            <label class="cursor-pointer p-3.5 rounded-2xl bg-gray-900/90 border-2 border-gray-700 flex items-center space-x-2.5 transition-all" id="renew-pay-cash-box">
+              <input type="radio" name="renewPaymentMethod" value="CASH" class="text-emerald-500 accent-emerald-500">
+              <div>
+                <p class="font-bold text-xs text-white">💵 Pay Cash</p>
+                <p class="text-[10px] text-gray-400">Pay at Counter</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Renew Button -->
+        <button id="renew-submit-btn" onclick="submitRenewal()" class="w-full py-3.5 rounded-2xl font-black text-sm bg-gradient-to-r from-emerald-500 to-cyan-500 text-gray-950 shadow-xl shadow-emerald-500/25 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center space-x-2">
+          <span id="renew-btn-text">Renew Membership</span>
+          <span>➔</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <footer class="border-t border-gray-800 py-4 text-center text-xs text-gray-500">
     GymSarthi Member App • Gate Attendance & Self Service
   </footer>
@@ -134,6 +205,7 @@
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/pwa.js"></script>
+  <script src="js/razorpay.js"></script>
   <script>
     Auth.requireAuth('MEMBER');
 
@@ -141,6 +213,131 @@
     Utils.setElementText('user-display-name', user.name || 'Member');
     Utils.setElementText('welcome-title', `Hello, ${user.name || 'Athlete'}! 👋`);
 
+    // ─── Renewal State ──────────────────────────────────────────────
+    let renewPackagesList = [];
+    let selectedRenewPackage = null;
+
+    // Payment radio styling
+    const renewOnlineBox = document.getElementById('renew-pay-online-box');
+    const renewCashBox = document.getElementById('renew-pay-cash-box');
+    document.querySelectorAll('input[name="renewPaymentMethod"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        if (e.target.value === 'ONLINE') {
+          renewOnlineBox.className = 'cursor-pointer p-3.5 rounded-2xl bg-gray-900/90 border-2 border-emerald-500 flex items-center space-x-2.5 transition-all';
+          renewCashBox.className = 'cursor-pointer p-3.5 rounded-2xl bg-gray-900/90 border-2 border-gray-700 flex items-center space-x-2.5 transition-all';
+        } else {
+          renewCashBox.className = 'cursor-pointer p-3.5 rounded-2xl bg-gray-900/90 border-2 border-emerald-500 flex items-center space-x-2.5 transition-all';
+          renewOnlineBox.className = 'cursor-pointer p-3.5 rounded-2xl bg-gray-900/90 border-2 border-gray-700 flex items-center space-x-2.5 transition-all';
+        }
+      });
+    });
+
+    function openRenewModal() {
+      document.getElementById('renew-modal').classList.remove('hidden');
+      loadRenewPackages();
+    }
+
+    function closeRenewModal() {
+      document.getElementById('renew-modal').classList.add('hidden');
+    }
+
+    async function loadRenewPackages() {
+      const grid = document.getElementById('renew-packages-grid');
+      const loader = document.getElementById('renew-packages-loading');
+
+      try {
+        const pkgs = await Api.getPackages();
+        renewPackagesList = Array.isArray(pkgs) ? pkgs : [];
+
+        loader.classList.add('hidden');
+        grid.classList.remove('hidden');
+
+        grid.innerHTML = renewPackagesList.map((pkg, idx) => `
+          <div onclick="selectRenewPkg('${pkg.package_id}')" id="renew-pkg-${pkg.package_id}"
+            class="renew-pkg-card cursor-pointer p-4 rounded-2xl border-2 transition-all ${idx === 0 ? 'border-emerald-500 bg-emerald-950/20' : 'border-gray-800 bg-gray-900/60 hover:border-gray-700'}">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-800 text-emerald-400">${pkg.badge || 'Plan'}</span>
+              <span class="text-[10px] text-gray-400">${pkg.duration_days || 30} Days</span>
+            </div>
+            <p class="font-bold text-sm text-white">${pkg.name}</p>
+            <p class="text-lg font-black text-emerald-400 mt-1">₹${Number(pkg.price).toLocaleString('en-IN')}</p>
+          </div>
+        `).join('');
+
+        selectRenewPkg(renewPackagesList[0].package_id);
+      } catch (err) {
+        loader.textContent = 'Failed to load packages.';
+        console.warn('Package load error:', err);
+      }
+    }
+
+    function selectRenewPkg(pkgId) {
+      selectedRenewPackage = renewPackagesList.find(p => p.package_id === pkgId) || renewPackagesList[0];
+      document.querySelectorAll('.renew-pkg-card').forEach(card => {
+        card.className = 'renew-pkg-card cursor-pointer p-4 rounded-2xl border-2 border-gray-800 bg-gray-900/60 hover:border-gray-700 transition-all';
+      });
+      const selectedCard = document.getElementById(`renew-pkg-${pkgId}`);
+      if (selectedCard) {
+        selectedCard.className = 'renew-pkg-card cursor-pointer p-4 rounded-2xl border-2 border-emerald-500 bg-emerald-950/20 transition-all';
+      }
+      document.getElementById('renew-btn-text').textContent = `Renew Membership — ₹${Number(selectedRenewPackage.price).toLocaleString('en-IN')}`;
+    }
+
+    async function submitRenewal() {
+      if (!selectedRenewPackage) {
+        Utils.showToast('Please select a membership package.', 'error');
+        return;
+      }
+
+      const memberId = user.member_id || user.memberId || user.id;
+      const paymentMethod = document.querySelector('input[name="renewPaymentMethod"]:checked').value;
+      const submitBtn = document.getElementById('renew-submit-btn');
+      submitBtn.disabled = true;
+
+      const finishRenewal = async (razorpayPaymentId = null) => {
+        submitBtn.innerHTML = `<span>Processing Renewal...</span>`;
+        try {
+          const res = await Api.renewMembership({
+            memberId,
+            gymId: CONFIG.GYM_ID,
+            packageId: selectedRenewPackage.package_id,
+            paymentMethod,
+            razorpayPaymentId
+          });
+
+          Utils.showToast(res.message || '🎉 Membership renewed successfully!', 'success');
+          closeRenewModal();
+
+          // Refresh dashboard data
+          setTimeout(() => location.reload(), 800);
+        } catch (err) {
+          Utils.showToast(err.message || 'Renewal failed. Please try again.', 'error');
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `<span id="renew-btn-text">Renew Membership — ₹${Number(selectedRenewPackage.price).toLocaleString('en-IN')}</span><span>➔</span>`;
+        }
+      };
+
+      if (paymentMethod === 'ONLINE') {
+        RazorpayHandler.openCheckout({
+          amount: selectedRenewPackage.price,
+          isSubscription: false,
+          description: `Membership Renewal — ${selectedRenewPackage.name}`,
+          customerName: user.name,
+          customerMobile: user.mobile,
+          customerEmail: user.email || '',
+          onSuccess: (paymentId) => finishRenewal(paymentId),
+          onFailure: (errMsg) => {
+            Utils.showToast(errMsg || 'Payment cancelled.', 'warning');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<span id="renew-btn-text">Renew Membership — ₹${Number(selectedRenewPackage.price).toLocaleString('en-IN')}</span><span>➔</span>`;
+          }
+        });
+      } else {
+        finishRenewal('CASH_RENEWAL');
+      }
+    }
+
+    // ─── Dashboard Load ─────────────────────────────────────────────
     async function loadDashboard() {
       try {
         const profile = await Api.getMemberProfile(user.member_id || user.id);
@@ -149,6 +346,41 @@
 
         Utils.setElementText('pkg-name', memberData.package_name || 'Standard Membership');
         Utils.setElementText('pkg-expiry', memberData.expiry_date ? `Valid until ${Utils.formatDate(memberData.expiry_date)}` : 'Active');
+
+        // ─── Smart Renewal Card Logic ─────────────────────────────
+        const renewCard = document.getElementById('renew-card');
+        const storeCard = document.getElementById('member-store-card');
+        const statusBadge = document.getElementById('member-status-badge');
+
+        if (memberData.expiry_date) {
+          const expiry = new Date(memberData.expiry_date);
+          const today = new Date();
+          const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+          const expiryMidnight = new Date(expiry.getFullYear(), expiry.getMonth(), expiry.getDate());
+          const daysLeft = Math.round((expiryMidnight - todayMidnight) / (1000 * 60 * 60 * 24));
+
+          if (daysLeft <= 7) {
+            // Show renewal card, hide store card
+            renewCard.classList.remove('hidden');
+            renewCard.classList.add('flex');
+            storeCard.classList.add('hidden');
+
+            if (daysLeft < 0) {
+              const daysAgo = Math.abs(daysLeft);
+              document.getElementById('renew-card-text').innerHTML = `<span class="text-rose-400 font-bold">⚠️ Membership expired ${daysAgo} ${daysAgo === 1 ? 'day' : 'days'} ago!</span> Renew now to restore gym access.`;
+              statusBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20';
+              statusBadge.textContent = '⚠️ Expired';
+            } else if (daysLeft === 0) {
+              document.getElementById('renew-card-text').innerHTML = `<span class="text-amber-400 font-bold">⏰ Membership expires TODAY!</span> Renew now to keep access.`;
+              statusBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20';
+              statusBadge.textContent = '⏰ Expires Today';
+            } else {
+              document.getElementById('renew-card-text').textContent = `Your membership expires in ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'}. Renew now to continue uninterrupted gym access!`;
+              statusBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20';
+              statusBadge.textContent = `⏳ ${daysLeft}d Left`;
+            }
+          }
+        }
 
         // Check subscription for Gym Store gating
         try {
@@ -170,6 +402,14 @@
         // Load attendance
         const attendanceLogs = await Api.getAttendance(CONFIG.GYM_ID, memberData.member_id || memberData.id);
         renderAttendance(attendanceLogs);
+
+        // Auto-open renewal modal if ?renew=true in URL (from WhatsApp message link)
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('renew') === 'true') {
+          openRenewModal();
+          // Clean up URL without reload
+          window.history.replaceState({}, '', window.location.pathname);
+        }
 
       } catch (err) {
         console.warn('Dashboard load error:', err);
