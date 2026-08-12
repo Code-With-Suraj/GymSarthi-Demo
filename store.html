@@ -186,10 +186,7 @@
     let cart = [];
     let isLoading = true;
 
-    // Purge any old demo cache
-    Utils.storage.remove('store_page_cache');
-
-    async function loadProducts(forceRefresh = true) {
+    async function loadProducts(forceRefresh = false) {
       const lockOverlay = document.getElementById('store-lock-overlay');
       const storeMainContent = document.getElementById('store-main-content');
       const cartBtn = document.getElementById('cart-btn');
@@ -363,10 +360,16 @@
         const isGear = String(p.category || '').toLowerCase().includes('gear') || String(p.category || '').toLowerCase().includes('accessor');
         const icon = isGear ? '🏋️' : '🥛';
         const price = Number(p.price || 0);
+        const imgUrl = p.image_url || p.image || '';
 
         return `
           <div class="glass-card p-5 rounded-2xl border-gray-800 flex flex-col justify-between glass-card-hover group">
             <div>
+              ${imgUrl ? `
+                <div class="w-full h-36 rounded-xl mb-3 overflow-hidden bg-gray-900 border border-gray-800 flex items-center justify-center">
+                  <img src="${imgUrl}" alt="${p.name || 'Product'}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'text-3xl\\'>${icon}</span>';">
+                </div>
+              ` : ''}
               <div class="flex items-center justify-between mb-2.5">
                 <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-lg bg-gray-900 text-cyan-400 border border-cyan-500/20 flex items-center space-x-1">
                   <span>${icon}</span>
@@ -546,8 +549,8 @@
       }
     }
 
-    // Fetch and load live products directly from database
-    loadProducts(true);
+    // Fetch and load products with instant SWR cache and background update
+    loadProducts(false);
   </script>
 </body>
 </html>

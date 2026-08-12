@@ -12,7 +12,7 @@ const CONFIG = {
   GYM_ADDRESS: 'Plot 105, Main Market Road, Sector 14, Gurugram, Haryana',
 
   // Google Apps Script REST API Web App Endpoint
-  API_BASE_URL: 'https://script.google.com/macros/s/AKfycbx4eY2d0qkuYXKs1Z0nP526-gslYoxxtYrt4omNuMg3zx74DqAooYI0LJ06dKp4AAc7ZQ/exec',
+  API_BASE_URL: 'https://script.google.com/macros/s/AKfycbwAndZClvqpsUdZwZkuPAGky8JQdjPMqP0BemVRKE6DJoGGcK9nytXAZZ5xg6r9f7vFgA/exec',
 
   // 1. GYM OWNER'S RAZORPAY GATEWAY (For Member Onboarding & Store Purchases)
   GYM_RAZORPAY_KEY_ID: (typeof localStorage !== 'undefined' && localStorage.getItem('gym_razorpay_key_id')) || 'rzp_live_gym_key_placeholder',

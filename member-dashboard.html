@@ -397,37 +397,28 @@
       }
     }
 
-    // ─── Dashboard Load (Parallel Fast Fetching) ────────────────────
-    async function loadDashboard() {
-      // Set immediate default status so it never gets stuck on "Checking gate status..."
-      const todayStatus = document.getElementById('today-status-text');
-      if (todayStatus) todayStatus.textContent = 'Status: Not checked in today yet.';
-
-      const memberId = user.member_id || user.memberId || user.id;
-
-      // Prefetch gym settings for real Razorpay Key ID
-      Api.getGymSettings().catch(() => {});
-
-      // Parallel Non-Blocking Fetch: getMemberProfile, getGymSubscription, getAttendance
-      const [profileRes, subRes, attendanceRes] = await Promise.allSettled([
-        Api.getMemberProfile(memberId),
-        Api.getGymSubscription(CONFIG.GYM_ID),
-        Api.getAttendance(CONFIG.GYM_ID, memberId)
-      ]);
-
-      // 1. Process Profile & Renewal Status
-      const profile = profileRes.status === 'fulfilled' && profileRes.value ? profileRes.value : user;
+    // ─── Immediate Synchronous Profile Hydration (0ms Instant Load) ────
+    function renderProfileData(profile) {
+      if (!profile) return;
       window.currentMemberProfile = profile;
 
-      Utils.setElementText('pkg-name', profile.package_name || user.package_name || 'Standard Membership');
-      Utils.setElementText('pkg-expiry', profile.expiry_date ? `Valid until ${Utils.formatDate(profile.expiry_date)}` : (user.expiry_date ? `Valid until ${Utils.formatDate(user.expiry_date)}` : 'Active'));
+      const name = profile.name || user.name || 'Athlete';
+      const firstName = name.split(' ')[0];
+      Utils.setElementText('user-display-name', name);
+      Utils.setElementText('welcome-title', `Hello, ${firstName}! 👋`);
+
+      const pkgName = profile.package_name || profile.packageName || user.package_name || user.packageName || 'Standard Membership';
+      const expiryDate = profile.expiry_date || profile.expiryDate || user.expiry_date || user.expiryDate;
+
+      Utils.setElementText('pkg-name', pkgName);
+      Utils.setElementText('pkg-expiry', expiryDate ? `Valid until ${Utils.formatDate(expiryDate)}` : 'Active Membership');
 
       const renewCard = document.getElementById('renew-card');
       const storeCard = document.getElementById('member-store-card');
       const statusBadge = document.getElementById('member-status-badge');
 
-      if (profile.expiry_date) {
-        const expiry = new Date(profile.expiry_date);
+      if (expiryDate) {
+        const expiry = new Date(expiryDate);
         const today = new Date();
         const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         const expiryMidnight = new Date(expiry.getFullYear(), expiry.getMonth(), expiry.getDate());
@@ -468,6 +459,35 @@
             statusBadge.textContent = 'Active Member';
           }
         }
+      }
+    }
+
+    // Hydrate UI synchronously at 0ms from user session object
+    renderProfileData(user);
+
+    // ─── Dashboard Load (Parallel Fast Fetching) ────────────────────
+    async function loadDashboard() {
+      // Set immediate default status so it never gets stuck on "Checking gate status..."
+      const todayStatus = document.getElementById('today-status-text');
+      if (todayStatus) todayStatus.textContent = 'Status: Not checked in today yet.';
+
+      const memberId = user.member_id || user.memberId || user.id;
+
+      // Prefetch gym settings for real Razorpay Key ID
+      Api.getGymSettings().catch(() => {});
+
+      // Parallel Non-Blocking Fetch: getMemberProfile, getGymSubscription, getAttendance
+      const [profileRes, subRes, attendanceRes] = await Promise.allSettled([
+        Api.getMemberProfile(memberId, CONFIG.GYM_ID, false, (freshProfile) => {
+          if (freshProfile) renderProfileData(freshProfile);
+        }),
+        Api.getGymSubscription(CONFIG.GYM_ID, false),
+        Api.getAttendance(CONFIG.GYM_ID, memberId)
+      ]);
+
+      // 1. Process Profile & Renewal Status
+      if (profileRes.status === 'fulfilled' && profileRes.value) {
+        renderProfileData(profileRes.value);
       }
 
       // 2. Process Store Gating
