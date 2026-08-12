@@ -32,8 +32,8 @@ const RazorpayHandler = {
     // Subscription -> Platform Account
     // Member/Store -> Gym Owner Account
     let keyId = isSubscription
-      ? (CONFIG.PLATFORM_RAZORPAY_KEY_ID || 'rzp_live_platform_key_placeholder')
-      : (CONFIG.GYM_RAZORPAY_KEY_ID || 'rzp_live_gym_key_placeholder');
+      ? (CONFIG.PLATFORM_RAZORPAY_KEY_ID || '')
+      : (CONFIG.GYM_RAZORPAY_KEY_ID || '');
 
     // If key is missing or is placeholder, fetch real key from backend sheets!
     if (typeof Api !== 'undefined') {
@@ -59,10 +59,34 @@ const RazorpayHandler = {
       }
     }
 
+    // If key is still placeholder or missing, prompt user to enter key or use simulated flow
+    if (typeof window !== 'undefined' && (!keyId || keyId.includes('placeholder'))) {
+      const targetName = isSubscription ? 'SaaS Platform Subscription' : 'Gym Revenue';
+      const enteredKey = prompt(
+        `💳 [Razorpay Live / Test Key Required]\n\n` +
+        `To open the REAL Razorpay Payment Modal for ${targetName}, please enter your Razorpay Key ID (starts with rzp_test_ or rzp_live_).\n\n` +
+        `Leave blank and press OK to use Demo Simulation flow instead:`,
+        ''
+      );
+
+      if (enteredKey && enteredKey.trim().length > 5) {
+        const cleanKey = enteredKey.trim();
+        keyId = cleanKey;
+        if (isSubscription) {
+          CONFIG.PLATFORM_RAZORPAY_KEY_ID = cleanKey;
+          if (typeof localStorage !== 'undefined') localStorage.setItem('platform_razorpay_key_id', cleanKey);
+        } else {
+          CONFIG.GYM_RAZORPAY_KEY_ID = cleanKey;
+          if (typeof localStorage !== 'undefined') localStorage.setItem('gym_razorpay_key_id', cleanKey);
+        }
+        if (typeof Utils !== 'undefined') Utils.showToast('Razorpay Key ID updated successfully!', 'success');
+      }
+    }
+
     const merchantName = isSubscription ? 'GymSarthi SaaS Platform' : CONFIG.GYM_NAME;
     const themeColor = isSubscription ? '#06B6D4' : '#10B981';
 
-    // If Razorpay SDK is available on window and valid key is set
+    // If Razorpay SDK is available on window and valid key is set (e.g. rzp_test_... or rzp_live_...)
     if (typeof window.Razorpay !== 'undefined' && keyId && !keyId.includes('placeholder')) {
       const options = {
         key: keyId,
