@@ -241,35 +241,63 @@
       document.getElementById('renew-modal').classList.add('hidden');
     }
 
-    async function loadRenewPackages() {
+    const DEFAULT_RENEW_PACKAGES = [
+      { package_id: 'PKG_1M', name: 'Monthly Fitness Pass', duration_days: 30, price: 1499, badge: 'Popular' },
+      { package_id: 'PKG_3M', name: 'Quarterly Transformer', duration_days: 90, price: 3999, badge: 'Best Value' },
+      { package_id: 'PKG_6M', name: 'Half-Yearly Beast Mode', duration_days: 180, price: 6999, badge: 'Pro Choice' },
+      { package_id: 'PKG_12M', name: 'Annual Champion Pass', duration_days: 365, price: 11999, badge: 'Max Savings' }
+    ];
+
+    function renderRenewPackages(pkgs) {
       const grid = document.getElementById('renew-packages-grid');
       const loader = document.getElementById('renew-packages-loading');
+      if (!grid) return;
 
+      renewPackagesList = Array.isArray(pkgs) && pkgs.length > 0 ? pkgs : DEFAULT_RENEW_PACKAGES;
+
+      if (loader) loader.classList.add('hidden');
+      grid.classList.remove('hidden');
+
+      grid.innerHTML = renewPackagesList.map((pkg, idx) => `
+        <div onclick="selectRenewPkg('${pkg.package_id}')" id="renew-pkg-${pkg.package_id}"
+          class="renew-pkg-card cursor-pointer p-4 rounded-2xl border-2 transition-all ${idx === 0 ? 'border-emerald-500 bg-emerald-950/20' : 'border-gray-800 bg-gray-900/60 hover:border-gray-700'}">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-800 text-emerald-400">${pkg.badge || 'Plan'}</span>
+            <span class="text-[10px] text-gray-400">${pkg.duration_days || 30} Days</span>
+          </div>
+          <p class="font-bold text-sm text-white">${pkg.name}</p>
+          <p class="text-lg font-black text-emerald-400 mt-1">₹${Number(pkg.price).toLocaleString('en-IN')}</p>
+        </div>
+      `).join('');
+
+      selectRenewPkg(renewPackagesList[0].package_id);
+    }
+
+    async function loadRenewPackages() {
+      // 1. Instant 0ms render if already cached/prefetched
+      if (renewPackagesList && renewPackagesList.length > 0) {
+        renderRenewPackages(renewPackagesList);
+      } else {
+        renderRenewPackages(DEFAULT_RENEW_PACKAGES);
+      }
+
+      // 2. Fetch fresh packages from backend asynchronously
       try {
         const pkgs = await Api.getPackages();
-        renewPackagesList = Array.isArray(pkgs) ? pkgs : [];
-
-        loader.classList.add('hidden');
-        grid.classList.remove('hidden');
-
-        grid.innerHTML = renewPackagesList.map((pkg, idx) => `
-          <div onclick="selectRenewPkg('${pkg.package_id}')" id="renew-pkg-${pkg.package_id}"
-            class="renew-pkg-card cursor-pointer p-4 rounded-2xl border-2 transition-all ${idx === 0 ? 'border-emerald-500 bg-emerald-950/20' : 'border-gray-800 bg-gray-900/60 hover:border-gray-700'}">
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-800 text-emerald-400">${pkg.badge || 'Plan'}</span>
-              <span class="text-[10px] text-gray-400">${pkg.duration_days || 30} Days</span>
-            </div>
-            <p class="font-bold text-sm text-white">${pkg.name}</p>
-            <p class="text-lg font-black text-emerald-400 mt-1">₹${Number(pkg.price).toLocaleString('en-IN')}</p>
-          </div>
-        `).join('');
-
-        selectRenewPkg(renewPackagesList[0].package_id);
+        if (Array.isArray(pkgs) && pkgs.length > 0) {
+          renderRenewPackages(pkgs);
+        }
       } catch (err) {
-        loader.textContent = 'Failed to load packages.';
         console.warn('Package load error:', err);
       }
     }
+
+    // Background prefetch packages on script load for instant 0ms modal opening!
+    Api.getPackages().then(pkgs => {
+      if (Array.isArray(pkgs) && pkgs.length > 0) {
+        renewPackagesList = pkgs;
+      }
+    }).catch(() => {});
 
     function selectRenewPkg(pkgId) {
       selectedRenewPackage = renewPackagesList.find(p => p.package_id === pkgId) || renewPackagesList[0];
@@ -295,7 +323,7 @@
       submitBtn.disabled = true;
 
       const finishRenewal = async (razorpayPaymentId = null) => {
-        submitBtn.innerHTML = `<span>Processing Renewal...</span>`;
+        submitBtn.innerHTML = `<span class="flex items-center justify-center space-x-2"><span>🔄 Processing Renewal...</span></span>`;
         try {
           const res = await Api.renewMembership({
             memberId,
@@ -305,13 +333,45 @@
             razorpayPaymentId
           });
 
-          Utils.showToast(res.message || '🎉 Membership renewed successfully!', 'success');
+          Utils.showToast(res.message || '🎉 Membership renewed successfully!', 'success', 5000);
           closeRenewModal();
 
-          // Refresh dashboard data
-          setTimeout(() => location.reload(), 800);
+          // 1. Instant 0ms local state update (No full page reload needed!)
+          if (res.newExpiryDate) {
+            user.expiry_date = res.newExpiryDate;
+            user.package_name = res.packageName;
+            user.package_id = selectedRenewPackage.package_id;
+            user.status = 'ACTIVE';
+            
+            // Save updated user session
+            const token = (typeof localStorage !== 'undefined' && localStorage.getItem('gymsarthi_token')) || 'TOKEN_ACTIVE';
+            Auth.setSession(token, user);
+
+            // Update UI elements instantly
+            Utils.setElementText('pkg-name', res.packageName || selectedRenewPackage.name);
+            Utils.setElementText('pkg-expiry', `Valid until ${Utils.formatDate(res.newExpiryDate)}`);
+
+            const statusBadge = document.getElementById('member-status-badge');
+            if (statusBadge) {
+              statusBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+              statusBadge.textContent = 'Active Member';
+            }
+
+            const renewCard = document.getElementById('renew-card');
+            const storeCard = document.getElementById('member-store-card');
+            if (renewCard && storeCard) {
+              renewCard.classList.add('hidden');
+              renewCard.classList.remove('flex');
+              storeCard.classList.remove('hidden');
+            }
+          }
+
+          // 2. Silent background refresh of full dashboard without interrupting UI
+          loadDashboard().catch(() => {});
+
         } catch (err) {
           Utils.showToast(err.message || 'Renewal failed. Please try again.', 'error');
+        } finally {
           submitBtn.disabled = false;
           submitBtn.innerHTML = `<span id="renew-btn-text">Renew Membership — ₹${Number(selectedRenewPackage.price).toLocaleString('en-IN')}</span><span>➔</span>`;
         }
@@ -337,86 +397,104 @@
       }
     }
 
-    // ─── Dashboard Load ─────────────────────────────────────────────
+    // ─── Dashboard Load (Parallel Fast Fetching) ────────────────────
     async function loadDashboard() {
-      try {
-        const profile = await Api.getMemberProfile(user.member_id || user.id);
-        const memberData = profile || user;
-        window.currentMemberProfile = memberData;
+      // Set immediate default status so it never gets stuck on "Checking gate status..."
+      const todayStatus = document.getElementById('today-status-text');
+      if (todayStatus) todayStatus.textContent = 'Status: Not checked in today yet.';
 
-        // Prefetch gym settings for real Razorpay Key ID
-        Api.getGymSettings().catch(() => {});
+      const memberId = user.member_id || user.memberId || user.id;
 
-        Utils.setElementText('pkg-name', memberData.package_name || 'Standard Membership');
-        Utils.setElementText('pkg-expiry', memberData.expiry_date ? `Valid until ${Utils.formatDate(memberData.expiry_date)}` : 'Active');
+      // Prefetch gym settings for real Razorpay Key ID
+      Api.getGymSettings().catch(() => {});
 
-        // ─── Smart Renewal Card Logic ─────────────────────────────
-        const renewCard = document.getElementById('renew-card');
-        const storeCard = document.getElementById('member-store-card');
-        const statusBadge = document.getElementById('member-status-badge');
+      // Parallel Non-Blocking Fetch: getMemberProfile, getGymSubscription, getAttendance
+      const [profileRes, subRes, attendanceRes] = await Promise.allSettled([
+        Api.getMemberProfile(memberId),
+        Api.getGymSubscription(CONFIG.GYM_ID),
+        Api.getAttendance(CONFIG.GYM_ID, memberId)
+      ]);
 
-        if (memberData.expiry_date) {
-          const expiry = new Date(memberData.expiry_date);
-          const today = new Date();
-          const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-          const expiryMidnight = new Date(expiry.getFullYear(), expiry.getMonth(), expiry.getDate());
-          const daysLeft = Math.round((expiryMidnight - todayMidnight) / (1000 * 60 * 60 * 24));
+      // 1. Process Profile & Renewal Status
+      const profile = profileRes.status === 'fulfilled' && profileRes.value ? profileRes.value : user;
+      window.currentMemberProfile = profile;
 
-          if (daysLeft <= 7) {
-            // Show renewal card, hide store card
-            renewCard.classList.remove('hidden');
-            renewCard.classList.add('flex');
-            storeCard.classList.add('hidden');
+      Utils.setElementText('pkg-name', profile.package_name || user.package_name || 'Standard Membership');
+      Utils.setElementText('pkg-expiry', profile.expiry_date ? `Valid until ${Utils.formatDate(profile.expiry_date)}` : (user.expiry_date ? `Valid until ${Utils.formatDate(user.expiry_date)}` : 'Active'));
 
-            if (daysLeft < 0) {
-              const daysAgo = Math.abs(daysLeft);
-              document.getElementById('renew-card-text').innerHTML = `<span class="text-rose-400 font-bold">⚠️ Membership expired ${daysAgo} ${daysAgo === 1 ? 'day' : 'days'} ago!</span> Renew now to restore gym access.`;
+      const renewCard = document.getElementById('renew-card');
+      const storeCard = document.getElementById('member-store-card');
+      const statusBadge = document.getElementById('member-status-badge');
+
+      if (profile.expiry_date) {
+        const expiry = new Date(profile.expiry_date);
+        const today = new Date();
+        const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const expiryMidnight = new Date(expiry.getFullYear(), expiry.getMonth(), expiry.getDate());
+        const daysLeft = Math.round((expiryMidnight - todayMidnight) / (1000 * 60 * 60 * 24));
+
+        if (daysLeft <= 7) {
+          if (renewCard) { renewCard.classList.remove('hidden'); renewCard.classList.add('flex'); }
+          if (storeCard) { storeCard.classList.add('hidden'); }
+
+          if (daysLeft < 0) {
+            const daysAgo = Math.abs(daysLeft);
+            const renewText = document.getElementById('renew-card-text');
+            if (renewText) renewText.innerHTML = `<span class="text-rose-400 font-bold">⚠️ Membership expired ${daysAgo} ${daysAgo === 1 ? 'day' : 'days'} ago!</span> Renew now to restore gym access.`;
+            if (statusBadge) {
               statusBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20';
               statusBadge.textContent = '⚠️ Expired';
-            } else if (daysLeft === 0) {
-              document.getElementById('renew-card-text').innerHTML = `<span class="text-amber-400 font-bold">⏰ Membership expires TODAY!</span> Renew now to keep access.`;
+            }
+          } else if (daysLeft === 0) {
+            const renewText = document.getElementById('renew-card-text');
+            if (renewText) renewText.innerHTML = `<span class="text-amber-400 font-bold">⏰ Membership expires TODAY!</span> Renew now to keep access.`;
+            if (statusBadge) {
               statusBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20';
               statusBadge.textContent = '⏰ Expires Today';
-            } else {
-              document.getElementById('renew-card-text').textContent = `Your membership expires in ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'}. Renew now to continue uninterrupted gym access!`;
+            }
+          } else {
+            const renewText = document.getElementById('renew-card-text');
+            if (renewText) renewText.textContent = `Your membership expires in ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'}. Renew now to continue uninterrupted gym access!`;
+            if (statusBadge) {
               statusBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20';
               statusBadge.textContent = `⏳ ${daysLeft}d Left`;
             }
           }
-        }
-
-        // Check subscription for Gym Store gating
-        try {
-          const sub = await Api.getGymSubscription(CONFIG.GYM_ID);
-          const storeDesc = document.getElementById('member-store-desc');
-          const storeBtn = document.getElementById('member-store-btn');
-          if (sub && (sub.hasStore === false || sub.hasActiveSubscription === false)) {
-            if (storeDesc) storeDesc.textContent = 'In-App Gym Store is currently disabled or locked for your gym.';
-            if (storeBtn) {
-              storeBtn.className = 'mt-4 py-2 px-4 rounded-xl bg-amber-500/10 text-amber-400 font-bold text-xs text-center border border-amber-500/30 transition-colors cursor-not-allowed';
-              storeBtn.innerHTML = '🔒 Store Disabled';
-              storeBtn.href = 'store.html';
-            }
+        } else {
+          if (renewCard) { renewCard.classList.add('hidden'); renewCard.classList.remove('flex'); }
+          if (storeCard) { storeCard.classList.remove('hidden'); }
+          if (statusBadge) {
+            statusBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+            statusBadge.textContent = 'Active Member';
           }
-        } catch (subErr) {
-          console.warn('Subscription check error:', subErr);
         }
+      }
 
-        // Load attendance
-        const attendanceLogs = await Api.getAttendance(CONFIG.GYM_ID, memberData.member_id || memberData.id);
-        renderAttendance(attendanceLogs);
-
-        // Auto-open renewal modal if ?renew=true in URL (from WhatsApp message link)
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('renew') === 'true') {
-          openRenewModal();
-          // Clean up URL without reload
-          window.history.replaceState({}, '', window.location.pathname);
+      // 2. Process Store Gating
+      if (subRes.status === 'fulfilled' && subRes.value) {
+        const sub = subRes.value;
+        const storeDesc = document.getElementById('member-store-desc');
+        const storeBtn = document.getElementById('member-store-btn');
+        if (sub.hasStore === false || sub.hasActiveSubscription === false) {
+          if (storeDesc) storeDesc.textContent = 'In-App Gym Store is currently disabled or locked for your gym.';
+          if (storeBtn) {
+            storeBtn.className = 'mt-4 py-2 px-4 rounded-xl bg-amber-500/10 text-amber-400 font-bold text-xs text-center border border-amber-500/30 transition-colors cursor-not-allowed';
+            storeBtn.innerHTML = '🔒 Store Disabled';
+            storeBtn.href = 'store.html';
+          }
         }
+      }
 
-      } catch (err) {
-        console.warn('Dashboard load error:', err);
-        renderAttendance([]);
+      // 3. Process Attendance Logs
+      const attendanceLogs = attendanceRes.status === 'fulfilled' ? attendanceRes.value : [];
+      const logsArray = Array.isArray(attendanceLogs) ? attendanceLogs : (attendanceLogs && Array.isArray(attendanceLogs.items) ? attendanceLogs.items : []);
+      renderAttendance(logsArray);
+
+      // Auto-open renewal modal if ?renew=true in URL (from WhatsApp link)
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('renew') === 'true') {
+        openRenewModal();
+        window.history.replaceState({}, '', window.location.pathname);
       }
     }
 
