@@ -500,10 +500,9 @@
     Auth.requireAuth('OWNER');
     OwnerSidebar.render('dashboard');
 
+    let globalSummary = null;
     let globalMembers = [];
     let globalInactives = [];
-    let globalPayments = [];
-    let globalExpenses = [];
     let globalPackages = [];
     let globalAttendance = [];
     let globalSubscription = null;
@@ -513,16 +512,14 @@
 
     async function loadDashboardMetrics(forceRefresh = false) {
       try {
-        const renderData = (dashData) => {
-          if (!dashData) return;
-          globalMembers = Array.isArray(dashData.members) ? dashData.members : [];
-          globalInactives = Array.isArray(dashData.inactiveMembers) ? dashData.inactiveMembers : [];
-          globalPayments = Array.isArray(dashData.payments) ? dashData.payments : [];
-          globalExpenses = Array.isArray(dashData.expenses) ? dashData.expenses : [];
-          globalPackages = Array.isArray(dashData.packages) ? dashData.packages : [];
-          globalAttendance = Array.isArray(dashData.attendance) ? dashData.attendance : [];
-          globalSubscription = dashData.subscription || null;
-          globalPlans = Array.isArray(dashData.plans) ? dashData.plans : [];
+        const renderData = (summaryData) => {
+          if (!summaryData) return;
+          globalSummary = summaryData;
+          globalMembers = Array.isArray(summaryData.recentMembers) ? summaryData.recentMembers : (Array.isArray(summaryData.members) ? summaryData.members : []);
+          globalInactives = Array.isArray(summaryData.inactiveMembers) ? summaryData.inactiveMembers : [];
+          globalPackages = Array.isArray(summaryData.packages) ? summaryData.packages : [];
+          globalSubscription = summaryData.subscription || null;
+          globalPlans = Array.isArray(summaryData.plans) ? summaryData.plans : [];
 
           // Populate Gate QR Card safely
           const gateQrImg = document.getElementById('gate-qr-img');
@@ -531,16 +528,23 @@
 
           // Process SaaS Subscription status & financial metrics
           handleSubscriptionState(globalSubscription, globalPlans);
-          calculateFinancials();
-          renderAttendanceWidgets();
+          calculateFinancials(summaryData);
           renderActiveMembersTable();
           renderLeaveMembersTable();
           renderPackagesGrid();
 
-          // If attendance logs were not in batch, fetch in background without blocking
+          // Set today attendance count from summary if available
+          if (summaryData.todayAttendanceCount !== undefined) {
+            Utils.setElementText('badge-attendance-today-count', `${summaryData.todayAttendanceCount} Today`);
+            Utils.setElementText('overview-att-today-count', summaryData.todayAttendanceCount);
+            Utils.setElementText('att-stat-today-total', summaryData.todayAttendanceCount);
+          }
+
+          // Lazy load attendance logs in background for attendance table
           if (globalAttendance.length === 0) {
-            Api.getAttendance(CONFIG.GYM_ID).then(logs => {
-              if (Array.isArray(logs) && logs.length > 0) {
+            Api.getAttendance(CONFIG.GYM_ID, { page: 1, pageSize: 50 }).then(res => {
+              const logs = Array.isArray(res) ? res : (res && res.items ? res.items : []);
+              if (logs.length > 0) {
                 globalAttendance = logs;
                 renderAttendanceWidgets();
               }
@@ -548,16 +552,16 @@
           }
         };
 
-        // Fetch raw batch data in single API call with Stale-While-Revalidate
-        const dashData = await Api.getDashboardData(CONFIG.GYM_ID, forceRefresh, (freshData) => {
+        // Fetch lightweight summary endpoint (< 5KB payload, instant render)
+        const summaryData = await Api.getDashboardSummary(CONFIG.GYM_ID, forceRefresh, (freshData) => {
           renderData(freshData);
         }).catch(err => {
-          console.error('Failed to load dashboard batch data:', err);
+          console.error('Failed to load dashboard summary:', err);
           return null;
         });
 
-        if (dashData) {
-          renderData(dashData);
+        if (summaryData) {
+          renderData(summaryData);
         }
       } catch (err) {
         console.warn('Dashboard load warning:', err);
@@ -703,35 +707,25 @@
       }
     }
 
-    function calculateFinancials() {
-      // Total Sales / Revenue
-      const totalSales = globalPayments
-        .filter(p => p.status === 'SUCCESS' || p.status === 'COMPLETED' || p.status === 'PAID')
-        .reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+    function calculateFinancials(summary = globalSummary) {
+      const s = summary || {};
+      const totalSales = s.totalSales !== undefined ? Number(s.totalSales) : 0;
+      const totalExpenses = s.totalExpenses !== undefined ? Number(s.totalExpenses) : 0;
+      const pendingCash = s.pendingCash !== undefined ? Number(s.pendingCash) : 0;
+      const netProfitOrLoss = s.netProfit !== undefined ? Number(s.netProfit) : (totalSales - totalExpenses);
 
-      // Pending Cash Float
-      const pendingCash = globalPayments
-        .filter(p => p.status === 'PENDING' || p.status === 'PENDING_CASH' || p.status === 'UNPAID')
-        .reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
-
-      // Total Expenses
-      const totalExpenses = globalExpenses.reduce((acc, e) => acc + (Number(e.amount) || 0), 0);
-
-      // Net Profit or Loss
-      const netProfitOrLoss = totalSales - totalExpenses;
-
-      // Active vs Leave Members count
-      const activeMembers = globalMembers.filter(m => (m.status || 'ACTIVE').toUpperCase() === 'ACTIVE');
-      const leaveMembers = globalInactives.length > 0 ? globalInactives : globalMembers.filter(m => (m.status || '').toUpperCase() !== 'ACTIVE' || (m.days_absent && m.days_absent >= 3));
+      const activeCount = s.activeMembersCount !== undefined ? Number(s.activeMembersCount) : (globalMembers.filter(m => (m.status || 'ACTIVE').toUpperCase() === 'ACTIVE').length);
+      const leaveCount = s.leaveMembersCount !== undefined ? Number(s.leaveMembersCount) : (s.inactiveMembersCount !== undefined ? Number(s.inactiveMembersCount) : globalInactives.length);
+      const totalMemberships = s.totalMembers !== undefined ? Number(s.totalMembers) : (activeCount + leaveCount);
 
       // Update KPIs safely
-      Utils.setElementText('kpi-active-members', activeMembers.length);
-      Utils.setElementText('badge-active-count', activeMembers.length);
+      Utils.setElementText('kpi-active-members', activeCount);
+      Utils.setElementText('badge-active-count', activeCount);
 
-      Utils.setElementText('kpi-leave-members', leaveMembers.length);
-      Utils.setElementText('badge-leave-count', leaveMembers.length);
+      Utils.setElementText('kpi-leave-members', leaveCount);
+      Utils.setElementText('badge-leave-count', leaveCount);
 
-      Utils.setElementText('kpi-memberships-count', globalMembers.length);
+      Utils.setElementText('kpi-memberships-count', totalMemberships);
       Utils.setElementText('kpi-total-sales', `₹${totalSales.toLocaleString('en-IN')}`);
       Utils.setElementText('kpi-total-expenses', `₹${totalExpenses.toLocaleString('en-IN')}`);
       Utils.setElementText('kpi-pending-cash', `₹${pendingCash.toLocaleString('en-IN')}`);

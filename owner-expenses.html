@@ -277,7 +277,7 @@
           renderTable(allExpenses);
         };
 
-        const raw = await Api.getExpenses(CONFIG.GYM_ID, forceRefresh, (freshData) => {
+        const raw = await Api.getExpenses(CONFIG.GYM_ID, {}, forceRefresh, (freshData) => {
           renderExpensesList(freshData);
         });
         if (raw) renderExpensesList(raw);

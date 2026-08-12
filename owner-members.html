@@ -276,29 +276,57 @@
 
     async function loadMembersData() {
       try {
-        const renderData = (dashData) => {
-          if (!dashData) return;
-          expiringMembers = Array.isArray(dashData.expiringMembers) ? dashData.expiringMembers : [];
-          inactiveMembers = Array.isArray(dashData.inactiveMembers) ? dashData.inactiveMembers : [];
-          allMembers = Array.isArray(dashData.members) ? dashData.members : [];
-
+        const updateBadgesAndRender = () => {
           const expBadge = document.getElementById('expiring-count-badge');
           const inactBadge = document.getElementById('inactive-count-badge');
           const allBadge = document.getElementById('all-count-badge');
 
-          if (expBadge) expBadge.textContent = expiringMembers.length;
-          if (inactBadge) inactBadge.textContent = inactiveMembers.length;
-          if (allBadge) allBadge.textContent = allMembers.length;
+          if (expBadge) expBadge.textContent = (expiringMembers || []).length;
+          if (inactBadge) inactBadge.textContent = (inactiveMembers || []).length;
+          if (allBadge) allBadge.textContent = (allMembers || []).length;
 
           renderExpiringTable(expiringMembers);
           renderInactiveTable(inactiveMembers);
           renderAllMembersTable(allMembers);
         };
 
-        const dashData = await Api.getDashboardData(CONFIG.GYM_ID, false, (freshData) => {
-          renderData(freshData);
-        });
-        if (dashData) renderData(dashData);
+        // 1. Instant Cache Hydration from Summary / Cache
+        const cachedSummary = Api.getStorageCache(`${CONFIG.GYM_ID}_getDashboardSummary_{"gymId":"${CONFIG.GYM_ID}"}`);
+        if (cachedSummary && cachedSummary.data) {
+          if (cachedSummary.data.expiringMembers) expiringMembers = cachedSummary.data.expiringMembers;
+          if (cachedSummary.data.inactiveMembers) inactiveMembers = cachedSummary.data.inactiveMembers;
+          if (cachedSummary.data.recentMembers && (!allMembers || allMembers.length === 0)) allMembers = cachedSummary.data.recentMembers;
+          updateBadgesAndRender();
+        }
+
+        // 2. Parallel Fetch with immediate incremental rendering
+        const membersPromise = Api.getMembers(CONFIG.GYM_ID, {}, false, (fresh) => {
+          allMembers = Array.isArray(fresh) ? fresh : (fresh.items || []);
+          updateBadgesAndRender();
+        }).then(data => {
+          allMembers = Array.isArray(data) ? data : (data && data.items ? data.items : []);
+          updateBadgesAndRender();
+        }).catch(err => console.warn('Members fetch error:', err));
+
+        const expiringPromise = Api.getExpiringMembers(CONFIG.GYM_ID, 3, false).then(res => {
+          if (res && res.expiringMembers) {
+            expiringMembers = res.expiringMembers;
+            const expBadge = document.getElementById('expiring-count-badge');
+            if (expBadge) expBadge.textContent = expiringMembers.length;
+            renderExpiringTable(expiringMembers);
+          }
+        }).catch(err => console.warn('Expiring members error:', err));
+
+        const inactivePromise = Api.getInactiveMembers(CONFIG.GYM_ID, 3, false).then(res => {
+          if (res && res.inactiveMembers) {
+            inactiveMembers = res.inactiveMembers;
+            const inactBadge = document.getElementById('inactive-count-badge');
+            if (inactBadge) inactBadge.textContent = inactiveMembers.length;
+            renderInactiveTable(inactiveMembers);
+          }
+        }).catch(err => console.warn('Inactive members error:', err));
+
+        await Promise.allSettled([membersPromise, expiringPromise, inactivePromise]);
 
       } catch (err) {
         console.warn('Members load error:', err);

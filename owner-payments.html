@@ -224,7 +224,7 @@
           }
         };
 
-        const rawPayments = await Api.getPayments(CONFIG.GYM_ID, false, (freshData) => {
+        const rawPayments = await Api.getPayments(CONFIG.GYM_ID, {}, false, (freshData) => {
           renderPayments(freshData);
         });
         if (rawPayments) renderPayments(rawPayments);
